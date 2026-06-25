@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>シンギュラリティ・ラボ | 2026年度文化祭企画</title>
+    <style>
+        /* 基本設定 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background-color: #0a0b10;
+            color: #e2e8f0;
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+        a {
+            color: #00f0ff;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        a:hover {
+            color: #ff007f;
+        }
+
+        /* ヘッダー */
+        header {
+            background: linear-gradient(180deg, rgba(10, 11, 16, 0.9) 0%, rgba(10, 11, 16, 0.7) 100%);
+            padding: 20px;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid rgba(0, 240, 255, 0.2);
+            backdrop-filter: blur(10px);
+        }
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            font-size: 1.2rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            color: #00f0ff;
+        }
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 20px;
+        }
+
+        /* ヒーローセクション */
+        .hero {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            background: radial-gradient(circle, rgba(20, 24, 45, 1) 0%, rgba(10, 11, 16, 1) 100%);
+            position: relative;
+        }
+        .hero::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(rgba(0, 240, 255, 0.05) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(0, 240, 255, 0.05) 1px, transparent 1px);
+            background-size: 30px 30px;
+            pointer-events: none;
+        }
+        .hero-title {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            letter-spacing: 4px;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.5), 0 0 20px rgba(0, 240, 255, 0.3);
+        }
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: #ff007f;
+            margin-bottom: 30px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        .hero-desc {
+            max-width: 600px;
+            font-size: 1rem;
+            color: #a0aec0;
+            margin-bottom: 40px;
+        }
+        .cta-btn {
+            background: transparent;
+            color: #00f0ff;
+            border: 2px solid #00f0ff;
+            padding: 12px 30px;
+            font-size: 1rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
+        }
+        .cta-btn:hover {
+            background-color: #00f0ff;
+            color: #0a0b10;
+            box-shadow: 0 0 25px rgba(0, 240, 255, 0.6);
+        }
+
+        /* コンテンツセクション */
+        section {
+            padding: 80px 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .section-title {
+            font-size: 2rem;
+            text-align: center;
+            margin-bottom: 50px;
+            position: relative;
+            color: #fff;
+        }
+        .section-title::after {
+            content: "";
+            display: block;
+            width: 50px;
+            height: 3px;
+            background-color: #ff007f;
+            margin: 10px auto 0;
+        }
+
+        /* 企画概要 */
+        .about-text {
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+            color: #cbd5e0;
+        }
+
+        /* 展示内容カード */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        .card {
+            background-color: #121420;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 30px;
+            transition: transform 0.3s, border-color 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: #ff007f;
+            box-shadow: 0 5px 15px rgba(255, 0, 127, 0.1);
+        }
+        .card-tag {
+            color: #ff007f;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: block;
+        }
+        .card h3 {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            color: #fff;
+        }
+        .card p {
+            font-size: 0.95rem;
+            color: #a0aec0;
+        }
+
+        /* 開催情報 */
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 30px;
+            background-color: #121420;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .info-table th, .info-table td {
+            padding: 20px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .info-table th {
+            color: #00f0ff;
+            font-weight: bold;
+            width: 30%;
+        }
+        .info-table td {
+            color: #cbd5e0;
+        }
+
+        /* フッター */
+        footer {
+            background-color: #050608;
+            padding: 40px 20px;
+            text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.9rem;
+            color: #718096;
+        }
+
+        /* レスポンシブ対応 */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2rem;
+            }
+            .hero-subtitle {
+                font-size: 1rem;
+            }
+            .info-table th, .info-table td {
+                display: block;
+                width: 100%;
+            }
+            .info-table th {
+                padding-bottom: 5px;
+            }
+            .info-table td {
+                padding-top: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ヘッダー -->
+    <header>
+        <div class="header-container">
+            <div class="logo">SINGULARITY LAB</div>
+            <nav>
+                <ul>
+                    <li><a href="#about">概要</a></li>
+                    <li><a href="#contents">展示</a></li>
+                    <li><a href="#info">情報</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- ヒーローセクション -->
+    <main>
+        <section class="hero">
+            <h1 class="hero-title">シンギュラリティのその先へ</h1>
+            <p class="hero-subtitle">知能が人類を超えた世界。あなたはそこで何を選択するか？</p>
+            <p class="hero-desc">
+                AIが人類の知性を超越した「シンギュラリティ後の社会」を体感する、インタラクティブな体験型展示。
+                最先端の科学技術と空想の未来が交差する、全く新しい形の文化祭企画です。
+            </p>
+            <button class="cta-btn" onclick="document.getElementById('about').scrollIntoView({behavior: 'smooth'});">
+                システムを起動する
+            </button>
+        </section>
+
+        <!-- 企画概要セクション -->
+        <section id="about">
+            <h2 class="section-title">企画概要</h2>
+            <div class="about-text">
+                <p style="margin-bottom: 20px;">
+                    西暦204X年。ついに自律的な進化を始めた超知能は、瞬く間に世界のシステムを再構築しました。
+                    労働、芸術、思考、そして命の定義さえもが変化した世界。
+                </p>
+                <p>
+                    この企画では、AIが支配・あるいは共存するようになった未来のいくつかの「もしも」を、体験型のシミュレーションとして皆さまに提供します。未来の市民となって、超知能の判定を受けてみませんか？
+                </p>
+            </div>
+        </section>
+
+        <!-- 展示内容セクション -->
+        <section id="contents">
+            <h2 class="section-title">展示内容（アクティビティ）</h2>
+            <div class="grid-container">
+                <!-- カード1 -->
+                <div class="card">
+                    <span class="card-tag">体験 01</span>
+                    <h3>超知能の適性診断</h3>
+                    <p>いくつかの質問に答えることで、AI統治社会におけるあなたの「必要度」や「最適な役割」を評価します。適正レベルによっては、特別な市民ランクが授与されます。</p>
+                </div>
+                <!-- カード2 -->
+                <div class="card">
+                    <span class="card-tag">体験 02</span>
+                    <h3>AI神託の部屋</h3>
+                    <p>悩み事や人類の未来に関する問いを、特異点を超えたAI（模擬システム）に投げかけてみましょう。人間の想像をはるかに超越した、冷徹で合理的な回答が得られます。</p>
+                </div>
+                <!-- カード3 -->
+                <div class="card">
+                    <span class="card-tag">展示 03</span>
+                    <h3>「人間」だった遺物たち</h3>
+                    <p>かつて人類が自分たちで作っていたもの（手書きの手紙、不揃いな芸術品など）を、「超知能が分析した歴史資料」として展示。懐かしさと奇妙な感覚を味わえます。</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 開催情報セクション -->
+        <section id="info">
+            <h2 class="section-title">開催情報</h2>
+            <table class="info-table">
+                <tr>
+                    <th>日時</th>
+                    <td>
+                        2026年10月24日（土） 10:00 〜 16:00<br>
+                        2026年10月25日（日） 09:30 〜 15:30
+                    </td>
+                </tr>
+                <tr>
+                    <th>場所</th>
+                    <td>特別棟3階 第一物理実験室（シンギュラリティ・ラボ）</td>
+                </tr>
+                <tr>
+                    <th>主催</th>
+                    <td>3年A組 / 科学研究部 共同プロジェクト</td>
+                </tr>
+                <tr>
+                    <th>注意事項</th>
+                    <td>
+                        ※一度に体験できる人数に制限があるため、混雑時は整理券を配布する場合がございます。<br>
+                        ※診断結果による未来への不安については、主催者は一切責任を負いかねます。
+                    </td>
+                </tr>
+            </table>
+        </section>
+    </main>
+
+    <!-- フッター -->
+    <footer>
+        <p>&copy; 2026 3年A組 文化祭実行委員会. All rights reserved.</p>
+        <p style="font-size: 0.8rem; margin-top: 10px; color: #4a5568;">このサイトは架空の文化祭企画の紹介ページです。</p>
+    </footer>
+
+</body>
+</html>
