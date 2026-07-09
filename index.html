@@ -1,545 +1,425 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>プロジェクトAI 〜人類最後のアップデートが始まる〜</title>
-  <style>
-    /* ==========================================
-       共通・ベーススタイル（サイバーパンクテーマ）
-       ========================================== */
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      background-color: #05050c;
-      color: #00f0ff;
-      font-family: 'Courier New', Courier, monospace, 'BIZ UDゴシック', sans-serif;
-      overflow: hidden; /* ローディング中はスクロール不可 */
-      min-height: 100vh;
-    }
-
-    /* 背景グリッドパターン */
-    body::before {
-      content: '';
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-image: 
-        linear-gradient(rgba(0, 240, 255, 0.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 240, 255, 0.04) 1px, transparent 1px);
-      background-size: 30px 30px;
-      z-index: -2;
-      pointer-events: none;
-    }
-
-    /* 走査線（スキャンライン）演出 */
-    .scanline {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(
-        rgba(18, 16, 16, 0) 50%, 
-        rgba(0, 0, 0, 0.15) 50%
-      );
-      background-size: 100% 4px;
-      z-index: 10000;
-      pointer-events: none;
-    }
-
-    /* 動くスキャンバー */
-    .scanline::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 4px;
-      background: rgba(0, 240, 255, 0.25);
-      box-shadow: 0 0 10px rgba(0, 240, 255, 0.7);
-      animation: scan 4s linear infinite;
-    }
-
-    @keyframes scan {
-      0% { top: -5%; }
-      100% { top: 105%; }
-    }
-
-    /* ==========================================
-       1. システム起動（ローディング）画面
-       ========================================== */
-    .loader {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background-color: #030307;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-      transition: opacity 0.8s cubic-bezier(0.77, 0, 0.175, 1), transform 0.8s cubic-bezier(0.77, 0, 0.175, 1);
-    }
-
-    /* カウント完了後のフェードアウト */
-    .loader.fade-out {
-      opacity: 0;
-      transform: scale(1.08);
-      pointer-events: none;
-    }
-
-    /* 終了直前の瞬間的なノイズグリッチ演出 */
-    .loader.glitch-out {
-      animation: glitch-screen 0.25s steps(2) infinite;
-    }
-
-    @keyframes glitch-screen {
-      0% {
-        filter: hue-rotate(0deg) saturate(1.5) contrast(1.2);
-        transform: translate(-3px, 2px);
-      }
-      50% {
-        filter: hue-rotate(120deg) saturate(0.5) contrast(0.8);
-        transform: translate(3px, -2px);
-      }
-      100% {
-        filter: hue-rotate(240deg) saturate(2) contrast(1.5);
-        transform: translate(0, 0);
-      }
-    }
-
-    /* ローダー内部コンテンツ */
-    .loader-content {
-      width: 90%;
-      max-width: 450px;
-      padding: 30px;
-      border: 1px solid rgba(0, 240, 255, 0.2);
-      background: rgba(3, 3, 7, 0.9);
-      box-shadow: 0 0 30px rgba(0, 240, 255, 0.1);
-      position: relative;
-    }
-
-    .terminal-header {
-      font-size: 0.75rem;
-      color: #ff007f;
-      margin-bottom: 20px;
-      text-shadow: 0 0 5px #ff007f;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      letter-spacing: 1px;
-    }
-
-    .status-dot {
-      width: 6px;
-      height: 6px;
-      background-color: #ff007f;
-      border-radius: 50%;
-      box-shadow: 0 0 8px #ff007f;
-      animation: blink 0.8s infinite alternate;
-    }
-
-    @keyframes blink {
-      0% { opacity: 0.3; }
-      100% { opacity: 1; }
-    }
-
-    /* 起動中テキスト */
-    .glitch-text {
-      font-size: 1.3rem;
-      font-weight: bold;
-      color: #00f0ff;
-      text-shadow: 0 0 8px rgba(0, 240, 255, 0.6);
-      margin-bottom: 20px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      animation: textGlitch 2s infinite alternate;
-    }
-
-    @keyframes textGlitch {
-      0% { text-shadow: 0 0 8px rgba(0, 240, 255, 0.6), 1px 0 0 rgba(255, 0, 127, 0.4); }
-      50% { text-shadow: 0 0 8px rgba(0, 240, 255, 0.6), -1px 0 0 rgba(255, 0, 127, 0.4); }
-      100% { text-shadow: 0 0 8px rgba(0, 240, 255, 0.6), 1px -1px 0 rgba(255, 0, 127, 0.4); }
-    }
-
-    /* ログ出力エリア */
-    .boot-sequence {
-      text-align: left;
-      font-size: 0.7rem;
-      color: rgba(0, 240, 255, 0.7);
-      margin-bottom: 25px;
-      height: 80px;
-      overflow-y: hidden;
-      font-family: monospace;
-      border-top: 1px dashed rgba(0, 240, 255, 0.2);
-      padding-top: 10px;
-    }
-
-    .log-line {
-      margin-bottom: 4px;
-      white-space: nowrap;
-    }
-
-    /* プログレスバー */
-    .progress-container {
-      width: 100%;
-      height: 5px;
-      background-color: rgba(0, 240, 255, 0.1);
-      border: 1px solid rgba(0, 240, 255, 0.3);
-      margin-bottom: 15px;
-      overflow: hidden;
-    }
-
-    .progress-bar {
-      width: 0%;
-      height: 100%;
-      background-color: #00f0ff;
-      box-shadow: 0 0 10px #00f0ff;
-      transition: width 0.05s linear;
-    }
-
-    /* パーセンテージ数値 */
-    .percentage-display {
-      font-size: 3rem;
-      font-weight: 900;
-      color: #00f0ff;
-      text-shadow: 0 0 15px #00f0ff;
-    }
-
-    .percentage-display .unit {
-      font-size: 1.5rem;
-      margin-left: 2px;
-    }
-
-    /* ==========================================
-       2. メイン画面への遷移・レイアウト
-       ========================================== */
-    .main-content {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      padding: 20px;
-      box-sizing: border-box;
-      opacity: 0;
-      transform: translateY(20px);
-      transition: opacity 1.2s cubic-bezier(0.19, 1, 0.22, 1), transform 1.2s cubic-bezier(0.19, 1, 0.22, 1);
-    }
-
-    /* ロード完了時のフェードイン */
-    .main-content.loaded {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    /* メインコンテナ */
-    .cyber-container {
-      position: relative;
-      width: 100%;
-      max-width: 580px;
-      background: rgba(5, 5, 12, 0.85);
-      border: 2px solid #ff007f;
-      box-shadow: 0 0 25px rgba(255, 0, 127, 0.35), inset 0 0 15px rgba(255, 0, 127, 0.15);
-      padding: 45px 30px;
-      box-sizing: border-box;
-      text-align: center;
-      /* コーナーをカットするサイバー風の切り抜き */
-      clip-path: polygon(
-        0px 20px, 20px 0px, 
-        calc(100% - 20px) 0px, 100% 20px, 
-        100% calc(100% - 20px), calc(100% - 20px) 100%, 
-        20px 100%, 0px calc(100% - 20px)
-      );
-    }
-
-    /* 4隅の装飾パーツ */
-    .corner-decoration {
-      position: absolute;
-      width: 16px;
-      height: 16px;
-      border-color: #00f0ff;
-      border-style: solid;
-      pointer-events: none;
-      box-shadow: 0 0 8px rgba(0, 240, 255, 0.8);
-    }
-
-    .top-left { top: 5px; left: 5px; border-width: 2px 0 0 2px; }
-    .top-right { top: 5px; right: 5px; border-width: 2px 2px 0 0; }
-    .bottom-left { bottom: 5px; left: 5px; border-width: 0 0 2px 2px; }
-    .bottom-right { bottom: 5px; right: 5px; border-width: 0 2px 2px 0; }
-
-    /* タイトル（段階的表示） */
-    .title {
-      font-size: 1.8rem;
-      font-weight: 800;
-      color: #ffffff;
-      text-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
-      margin-bottom: 35px;
-      line-height: 1.4;
-      letter-spacing: 1px;
-      opacity: 0;
-      transform: translateY(15px);
-      transition: opacity 0.8s ease-out 0.4s, transform 0.8s ease-out 0.4s;
-    }
-
-    .subtitle {
-      display: block;
-      font-size: 1.1rem;
-      color: #00f0ff;
-      text-shadow: 0 0 8px rgba(0, 240, 255, 0.8);
-      margin-top: 12px;
-      font-weight: normal;
-    }
-
-    /* インフォメーションエリア（段階的表示） */
-    .info-section {
-      border-top: 1px solid rgba(0, 240, 255, 0.3);
-      border-bottom: 1px solid rgba(0, 240, 255, 0.3);
-      padding: 25px 0;
-      opacity: 0;
-      transform: translateY(15px);
-      transition: opacity 0.8s ease-out 0.7s, transform 0.8s ease-out 0.7s;
-    }
-
-    /* 親要素が loaded になるとディレイを伴って表示 */
-    .main-content.loaded .title,
-    .main-content.loaded .info-section {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .info-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 18px;
-    }
-
-    .info-item:last-child {
-      margin-bottom: 0;
-    }
-
-    .info-label {
-      font-size: 0.8rem;
-      color: #ff007f;
-      text-shadow: 0 0 5px #ff007f;
-      font-weight: bold;
-      letter-spacing: 2px;
-    }
-
-    .info-value {
-      font-size: 1.1rem;
-      color: #ffffff;
-      text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
-      font-weight: bold;
-    }
-
-    /* ==========================================
-       レスポンシブ対応
-       ========================================== */
-    @media (max-width: 480px) {
-      .cyber-container {
-        padding: 30px 15px;
-        clip-path: polygon(
-          0px 15px, 15px 0px, 
-          calc(100% - 15px) 0px, 100% 15px, 
-          100% calc(100% - 15px), calc(100% - 15px) 100%, 
-          15px 100%, 0px calc(100% - 15px)
-        );
-      }
-
-      .title {
-        font-size: 1.35rem;
-        margin-bottom: 25px;
-      }
-
-      .subtitle {
-        font-size: 0.85rem;
-      }
-
-      .info-section {
-        padding: 15px 0;
-      }
-
-      .info-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 5px;
-        margin-bottom: 12px;
-      }
-
-      .info-value {
-        font-size: 0.95rem;
-        padding-left: 5px;
-        border-left: 2px solid #00f0ff;
-      }
-
-      .percentage-display {
-        font-size: 2.5rem;
-      }
-    }
-  </style>
-</head>
-<body>
-
-  <!-- 走査線（画面全体） -->
-  <div class="scanline"></div>
-
-  <!-- 1. ローディング画面 (ブートシーケンス) -->
-  <div id="loader" class="loader">
-    <div class="loader-content">
-      <div class="terminal-header">
-        <span class="status-dot"></span> SECURE CONNECTION ESTABLISHED
-      </div>
-      
-      <div class="glitch-text">BOOT SEQUENCE ACTIVE</div>
-      
-      <!-- 動的に追加される擬似ブートログ -->
-      <div id="bootSequence" class="boot-sequence"></div>
-      
-      <!-- プログレスバー -->
-      <div class="progress-container">
-        <div id="progressBar" class="progress-bar"></div>
-      </div>
-      
-      <!-- カウント表示 -->
-      <div class="percentage-display">
-        <span id="percent">0</span><span class="unit">%</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- 2. メインコンテンツ -->
-  <div id="mainContent" class="main-content">
-    <div class="cyber-container">
-      <!-- 角のネオン装飾 -->
-      <div class="corner-decoration top-left"></div>
-      <div class="corner-decoration top-right"></div>
-      <div class="corner-decoration bottom-left"></div>
-      <div class="corner-decoration bottom-right"></div>
-      
-      <!-- タイトルエリア -->
-      <h1 class="title">
-        プロジェクトAI
-        <span class="subtitle">〜人類最後のアップデートが始まる〜</span>
-      </h1>
-      
-      <!-- インフォメーションエリア -->
-      <div class="info-section">
-        <div class="info-item">
-          <span class="info-label">DATE & TIME</span>
-          <span class="info-value">2026.11.02 - 11.03</span>
-        </div>
-        <div class="info-item">
-          <span class="info-label">LOCATION</span>
-          <span class="info-value">MAIN HALL - CENTRAL NODE</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ==========================================
-       JavaScript処理（ブート＆トランジション）
-       ========================================== */ -->
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const percentEl = document.getElementById("percent");
-      const progressBar = document.getElementById("progressBar");
-      const loader = document.getElementById("loader");
-      const mainContent = document.getElementById("mainContent");
-      const bootSequence = document.getElementById("bootSequence");
-      
-      let progress = 0;
-      
-      // 出力されるログメッセージのリスト
-      const logLines = [
-        ">> INITIALIZING SYSTEM KERNEL...",
-        ">> ESTABLISHING QUANTUM DECRYPTOR...",
-        ">> BYPASSING CENTRAL SECURITY GRID...",
-        ">> SYNCING NEURAL SYLLABLE ARRAYS...",
-        ">> ALLOCATING AI CORE MEMORY...",
-        ">> INJECTING FIRMWARE PATCH v1.0.4...",
-        ">> SYSTEM BOOT COMPLETED."
-      ];
-      
-      // ログ行を追加・スクロールする関数
-      function addLog(text) {
-        const line = document.createElement("div");
-        line.className = "log-line";
-        line.textContent = text;
-        bootSequence.appendChild(line);
-        // 常に最新のログ行へ自動スクロール
-        bootSequence.scrollTop = bootSequence.scrollHeight;
-      }
-
-      // カウントアップ処理（再帰関数）
-      function updateProgress() {
-        // ロード感を持たせるため、増加量を1〜8%の範囲でランダムにする
-        const increment = Math.floor(Math.random() * 8) + 1;
-        progress += increment;
-        
-        if (progress >= 100) {
-          progress = 100;
-          percentEl.textContent = progress;
-          progressBar.style.width = "100%";
-          addLog(logLines[6]);
-          
-          // 100%に到達後、少しの猶予を持たせて終了フェーズに移行
-          setTimeout(completeBoot, 600);
-        } else {
-          percentEl.textContent = progress;
-          progressBar.style.width = `${progress}%`;
-          
-          // 進捗の割合に応じて、タイミングよくデバッグログを出力
-          if (progress > 10 && progress <= 25 && bootSequence.children.length === 0) {
-            addLog(logLines[0]);
-          } else if (progress > 25 && progress <= 40 && bootSequence.children.length === 1) {
-            addLog(logLines[1]);
-          } else if (progress > 40 && progress <= 55 && bootSequence.children.length === 2) {
-            addLog(logLines[2]);
-          } else if (progress > 55 && progress <= 70 && bootSequence.children.length === 3) {
-            addLog(logLines[3]);
-          } else if (progress > 70 && progress <= 85 && bootSequence.children.length === 4) {
-            addLog(logLines[4]);
-          } else if (progress > 85 && progress < 100 && bootSequence.children.length === 5) {
-            addLog(logLines[5]);
-          }
-          
-          // 10ms〜50msのランダムな間隔で次のフレームを呼び出し（リアルで高速な演出）
-          const nextDelay = Math.floor(Math.random() * 40) + 10;
-          setTimeout(updateProgress, nextDelay);
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>プロジェクトAI〜人類最後のアップデートが始まる〜</title>
+    <style>
+        :root {
+            --bg-color: #030816;
+            --panel-bg: rgba(6, 15, 37, 0.85);
+            --accent-pink: #ff007f;
+            --accent-pink-glow: rgba(255, 0, 127, 0.6);
+            --text-main: #ffffff;
+            --text-sub: #a0aec0;
+            --grid-color: rgba(0, 150, 255, 0.05);
         }
-      }
-      
-      // 300ms後に起動シーケンスを開始
-      setTimeout(updateProgress, 300);
-      
-      // 起動完了後のトランジション処理
-      function completeBoot() {
-        // 1. ノイズエフェクトを適用
-        loader.classList.add("glitch-out");
-        
-        // 2. ノイズの後にフェードアウトを開始し、同時にメイン画面をフェードイン
-        setTimeout(() => {
-          loader.classList.add("fade-out");
-          mainContent.classList.add("loaded");
-          document.body.style.overflow = "auto"; // ロード終了後にスクロール可能にする
-        }, 250);
-        
-        // 3. 完全に非表示になったら DOM から無効化
-        setTimeout(() => {
-          loader.style.display = "none";
-        }, 1100);
-      }
-    });
-  </script>
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            /* サイバー風の背景グリッド */
+            background-image: 
+                linear-gradient(var(--grid-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            background-size: 30px 30px;
+            overflow-x: hidden;
+        }
+
+        /* 起動中のスクロール防止用クラス */
+        body.loading {
+            overflow: hidden;
+        }
+
+        /* -----------------------------------------
+           システム起動（ローディング）画面
+        ----------------------------------------- */
+        .loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: var(--bg-color);
+            background-image: 
+                linear-gradient(var(--grid-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            background-size: 30px 30px;
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
+            transition: opacity 0.6s cubic-bezier(0.19, 1, 0.22, 1), filter 0.6s, transform 0.6s;
+        }
+
+        /* 全画面を覆うブラウン管風の走査線 */
+        .scanline {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                rgba(18, 16, 16, 0) 50%, 
+                rgba(0, 0, 0, 0.15) 50%
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 10001;
+        }
+
+        /* 上下移動する光線 */
+        .scanline::after {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--accent-pink);
+            box-shadow: 0 0 12px var(--accent-pink-glow);
+            animation: scan 4s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { top: -10px; }
+            100% { top: 100%; }
+        }
+
+        .loader-content {
+            text-align: center;
+            z-index: 10000;
+            padding: 20px;
+        }
+
+        .loader-status {
+            font-size: 0.85rem;
+            color: var(--accent-pink);
+            text-shadow: 0 0 8px var(--accent-pink-glow);
+            letter-spacing: 0.25em;
+            margin-bottom: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .loader-percent {
+            font-size: 3.5rem;
+            font-weight: 900;
+            color: var(--text-main);
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
+            margin-bottom: 24px;
+            letter-spacing: -0.05em;
+        }
+
+        .loader-bar-bg {
+            width: 260px;
+            max-width: 80vw;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            margin: 0 auto;
+            border: 1px solid rgba(255, 0, 127, 0.3);
+            padding: 2px;
+            box-sizing: content-box;
+        }
+
+        /* セグメント化されたサイバー風インジケーター */
+        .loader-bar {
+            width: 0%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                90deg, 
+                var(--accent-pink), 
+                var(--accent-pink) 6px, 
+                transparent 6px, 
+                transparent 10px
+            );
+            box-shadow: 0 0 10px var(--accent-pink-glow);
+            transition: width 0.08s ease-out;
+        }
+
+        /* システム起動完了時の画面のブレ（ノイズ・グリッチ）演出 */
+        .loader.fade-out {
+            opacity: 0;
+            filter: hue-rotate(90deg) blur(4px);
+            pointer-events: none;
+            transform: scale(1.05);
+            animation: loader-glitch 0.4s ease-out;
+        }
+
+        @keyframes loader-glitch {
+            0% { transform: scale(1) skewX(0deg); filter: hue-rotate(0deg) contrast(1.2); }
+            15% { transform: scale(1.03) skewX(4deg); filter: hue-rotate(45deg) contrast(1.5); }
+            30% { transform: scale(0.98) skewX(-4deg); }
+            45% { transform: scale(1.05) skewX(8deg) translateY(-3px); }
+            60% { transform: scale(1) skewX(-8deg) translateY(3px); }
+            75% { transform: scale(1.02) skewX(1deg); }
+            100% { transform: scale(1.05) skewX(0deg); opacity: 0; }
+        }
+
+
+        /* -----------------------------------------
+           メイン画面（既存スタイル調整含む）
+        ----------------------------------------- */
+        .cyber-container {
+            width: 100%;
+            max-width: 600px;
+            background-color: var(--panel-bg);
+            border: 1px solid var(--accent-pink);
+            box-shadow: 0 0 15px var(--accent-pink-glow), inset 0 0 15px rgba(255, 0, 127, 0.1);
+            padding: 40px;
+            position: relative;
+            
+            /* 初期状態：非表示・縮小 */
+            opacity: 0;
+            transform: translateY(25px) scale(0.97);
+            transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* 起動完了後に付与される表示クラス */
+        .cyber-container.active {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        /* 装飾用コーナーライン */
+        .cyber-container::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            width: 20px;
+            height: 20px;
+            border-top: 4px solid var(--accent-pink);
+            border-left: 4px solid var(--accent-pink);
+        }
+
+        .cyber-container::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            width: 20px;
+            height: 20px;
+            border-bottom: 4px solid var(--accent-pink);
+            border-right: 4px solid var(--accent-pink);
+        }
+
+        .header {
+            border-bottom: 1px solid rgba(255, 0, 127, 0.3);
+            padding-bottom: 24px;
+            margin-bottom: 32px;
+        }
+
+        .title {
+            font-size: 1.75rem;
+            line-height: 1.4;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+
+        .title-accent {
+            color: var(--accent-pink);
+            text-shadow: 0 0 8px var(--accent-pink-glow);
+        }
+
+        .title-sub {
+            display: block;
+            font-size: 1.15rem;
+            margin-top: 8px;
+            color: var(--text-main);
+        }
+
+        .info-section {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .info-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .info-label {
+            font-size: 0.8rem;
+            color: var(--accent-pink);
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            font-weight: bold;
+            text-shadow: 0 0 5px rgba(255, 0, 127, 0.4);
+        }
+
+        .info-content {
+            font-size: 1.2rem;
+            background-color: rgba(10, 25, 60, 0.5);
+            padding: 14px 18px;
+            border-left: 3px solid var(--accent-pink);
+            letter-spacing: 0.05em;
+        }
+
+        /* -----------------------------------------
+           段階的表示（スタッガー効果）
+        ----------------------------------------- */
+        .cyber-container .header,
+        .cyber-container .info-group {
+            opacity: 0;
+            transform: translateY(15px);
+            transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* コンテナ展開に合わせて遅延表示 */
+        .cyber-container.active .header {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.4s;
+        }
+
+        .cyber-container.active .info-group:nth-of-type(1) {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.7s;
+        }
+
+        .cyber-container.active .info-group:nth-of-type(2) {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.9s;
+        }
+
+        /* モバイル端末向けの調整 */
+        @media (max-width: 480px) {
+            .cyber-container {
+                padding: 24px;
+            }
+            .title {
+                font-size: 1.4rem;
+            }
+            .title-sub {
+                font-size: 0.95rem;
+            }
+            .info-content {
+                font-size: 1.05rem;
+                padding: 10px 14px;
+            }
+            .loader-percent {
+                font-size: 2.8rem;
+            }
+        }
+    </style>
+</head>
+<body class="loading">
+
+    <!-- システム起動（ブート）画面 -->
+    <div id="loader" class="loader">
+        <div class="scanline"></div>
+        <div class="loader-content">
+            <div id="status" class="loader-status">BOOT SEQUENCE ACTIVE</div>
+            <div id="percent" class="loader-percent">0%</div>
+            <div class="loader-bar-bg">
+                <div id="bar" class="loader-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- メインコンテンツ -->
+    <div class="cyber-container">
+        <header class="header">
+            <h1 class="title">
+                <span class="title-accent">プロジェクトAI</span>
+                <span class="title-sub">〜人類最後のアップデートが始まる〜</span>
+            </h1>
+        </header>
+
+        <main class="info-section">
+            <div class="info-group">
+                <div class="info-label">日時</div>
+                <div class="info-content">9月5日（土）　9:20 - 15:00</div>
+            </div>
+
+            <div class="info-group">
+                <div class="info-label">場所</div>
+                <div class="info-content">HR棟4階 1年4組</div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const percentEl = document.getElementById("percent");
+            const barEl = document.getElementById("bar");
+            const statusEl = document.getElementById("status");
+            const loader = document.getElementById("loader");
+            const container = document.querySelector(".cyber-container");
+
+            // 起動中のシステム状況風メッセージ
+            const statuses = [
+                "BOOT SEQUENCE ACTIVE",
+                "CONNECTING TO AI CORE...",
+                "DECRYPTING ARCHIVES...",
+                "OPTIMIZING INTERFACE...",
+                "SYSTEM READY"
+            ];
+
+            let progress = 0;
+
+            function updateLoader() {
+                // 進捗（％）の増分をランダムにしてリアルな処理感を出す
+                const increment = Math.floor(Math.random() * 8) + 2; 
+                progress = Math.min(progress + increment, 100);
+
+                percentEl.textContent = `${progress}%`;
+                barEl.style.width = `${progress}%`;
+
+                // 進捗に応じてステータスメッセージを切り替え
+                if (progress < 20) {
+                    statusEl.textContent = statuses[0];
+                } else if (progress < 45) {
+                    statusEl.textContent = statuses[1];
+                } else if (progress < 70) {
+                    statusEl.textContent = statuses[2];
+                } else if (progress < 90) {
+                    statusEl.textContent = statuses[3];
+                } else {
+                    statusEl.textContent = statuses[4];
+                }
+
+                if (progress < 100) {
+                    // 更新間隔（速度）をミリ秒単位でランダムにし、起動処理の揺らぎを表現
+                    const delay = Math.floor(Math.random() * 60) + 15;
+                    setTimeout(updateLoader, delay);
+                } else {
+                    // 100%に到達後、少しだけ余韻を残して遷移開始
+                    setTimeout(() => {
+                        loader.classList.add("fade-out");
+                        document.body.classList.remove("loading");
+                        
+                        // ローダーのCSSアニメーション（0.4秒）が終了するタイミングで非表示化し、メイン要素を起動
+                        setTimeout(() => {
+                            loader.style.display = "none";
+                            container.classList.add("active");
+                        }, 400); 
+                    }, 400);
+                }
+            }
+
+            // ページロードから一瞬だけ間を空けてカウントアップを開始
+            setTimeout(updateLoader, 300);
+        });
+    </script>
 </body>
 </html>
