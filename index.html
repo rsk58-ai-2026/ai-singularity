@@ -301,6 +301,64 @@
             transition-delay: 0.9s;
         }
 
+        /* -----------------------------------------
+           定期グリッチ（バグ風）アニメーション
+        ----------------------------------------- */
+        /* コンテナ全体のブレと、RGBのずれを模した影効果 */
+        .cyber-container.glitch {
+            animation: container-glitch 0.3s linear infinite;
+            box-shadow: 
+                -3px -3px 0px rgba(0, 255, 255, 0.7), /* シアン */
+                3px 3px 0px rgba(255, 0, 127, 0.7),  /* マゼンタ（テーマのピンク） */
+                0 0 15px var(--accent-pink-glow),
+                inset 0 0 15px rgba(255, 0, 127, 0.1);
+        }
+
+        /* 主要テキストのRGB色ズレ */
+        .cyber-container.glitch .title,
+        .cyber-container.glitch .info-content {
+            animation: text-glitch 0.2s linear infinite;
+        }
+
+        /* 画面全体の瞬間的な色相・歪み変化 */
+        body.glitch-active {
+            animation: body-glitch 0.35s linear;
+        }
+
+        @keyframes container-glitch {
+            0% { transform: translate(0, 0) skew(0deg); }
+            10% { transform: translate(-3px, 2px) skew(-2deg); }
+            20% { transform: translate(2px, -3px) skew(3deg); }
+            30% { transform: translate(-1px, 1px) skew(-1deg); }
+            40% { transform: translate(3px, -1px) skew(2deg); }
+            50% { transform: translate(-2px, 3px) skew(-3deg); }
+            60% { transform: translate(1px, -2px) skew(1deg); }
+            70% { transform: translate(-3px, -1px) skew(-2deg); }
+            80% { transform: translate(2px, 2px) skew(2deg); }
+            90% { transform: translate(-1px, -2px) skew(-1deg); }
+            100% { transform: translate(0, 0) skew(0deg); }
+        }
+
+        @keyframes text-glitch {
+            0% { text-shadow: -2px -1px 0 #00ffff, 2px 1px 0 var(--accent-pink); }
+            20% { text-shadow: 2px -2px 0 #00ffff, -2px 2px 0 var(--accent-pink); }
+            40% { text-shadow: -3px 1px 0 #00ffff, 3px -1px 0 var(--accent-pink); }
+            60% { text-shadow: 1px 3px 0 #00ffff, -1px -3px 0 var(--accent-pink); }
+            80% { text-shadow: -2px -2px 0 #00ffff, 2px 2px 0 var(--accent-pink); }
+            100% { text-shadow: 2px 1px 0 #00ffff, -2px -1px 0 var(--accent-pink); }
+        }
+
+        @keyframes body-glitch {
+            0% { filter: hue-rotate(0deg) contrast(1) brightness(1); }
+            15% { filter: hue-rotate(45deg) contrast(1.3) brightness(1.2); }
+            30% { filter: hue-rotate(0deg) contrast(1) brightness(1); }
+            45% { filter: hue-rotate(-30deg) contrast(1.2) brightness(0.95); }
+            60% { filter: hue-rotate(0deg) contrast(1) brightness(1); }
+            75% { filter: hue-rotate(90deg) contrast(1.5) brightness(1.1); }
+            90% { filter: hue-rotate(0deg) contrast(1) brightness(1); }
+            100% { filter: hue-rotate(0deg) contrast(1) brightness(1); }
+        }
+
         /* モバイル端末向けの調整 */
         @media (max-width: 480px) {
             .cyber-container {
@@ -412,9 +470,41 @@
                         setTimeout(() => {
                             loader.style.display = "none";
                             container.classList.add("active");
+
+                            // メイン画面の表示アニメーション完了後（約1.5秒後）、定期グリッチを開始
+                            setTimeout(startGlitchLoop, 1500);
                         }, 400); 
                     }, 400);
                 }
+            }
+
+            // グリッチ（バグ）演出を再帰的に実行するループ処理
+            function startGlitchLoop() {
+                // 5秒から12秒の間で、次の発生間隔をランダムに決定
+                const minDelay = 5000;
+                const maxDelay = 12000;
+                const randomDelay = Math.floor(Math.random() * (maxDelay - minDelay + 1)) + minDelay;
+
+                setTimeout(() => {
+                    // クラス付与によりCSSグリッチを発動
+                    container.classList.add("glitch");
+                    document.body.classList.add("glitch-active");
+
+                    // 0.2秒から0.5秒の間で、グリッチの持続時間をランダムに決定
+                    const minDuration = 200;
+                    const maxDuration = 500;
+                    const randomDuration = Math.floor(Math.random() * (maxDuration - minDuration + 1)) + minDuration;
+
+                    setTimeout(() => {
+                        // グリッチ演出用のクラスを削除して元に戻す
+                        container.classList.remove("glitch");
+                        document.body.classList.remove("glitch-active");
+
+                        // 次回のグリッチ実行をスケジュール
+                        startGlitchLoop();
+                    }, randomDuration);
+
+                }, randomDelay);
             }
 
             // ページロードから一瞬だけ間を空けてカウントアップを開始
