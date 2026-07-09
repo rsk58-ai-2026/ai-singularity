@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>プロジェクトAI〜人類最後のアップデートが始まる〜</title>
+    <style>
+        :root {
+            --bg-color: #030816;
+            --panel-bg: rgba(6, 15, 37, 0.85);
+            --accent-pink: #ff007f;
+            --accent-pink-glow: rgba(255, 0, 127, 0.6);
+            --text-main: #ffffff;
+            --text-sub: #a0aec0;
+            --grid-color: rgba(0, 150, 255, 0.05);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            /* サイバー風の背景グリッド */
+            background-image: 
+                linear-gradient(var(--grid-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        .cyber-container {
+            width: 100%;
+            max-width: 600px;
+            background-color: var(--panel-bg);
+            border: 1px solid var(--accent-pink);
+            box-shadow: 0 0 15px var(--accent-pink-glow), inset 0 0 15px rgba(255, 0, 127, 0.1);
+            padding: 40px;
+            position: relative;
+        }
+
+        /* 装飾用コーナーライン */
+        .cyber-container::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            width: 20px;
+            height: 20px;
+            border-top: 4px solid var(--accent-pink);
+            border-left: 4px solid var(--accent-pink);
+        }
+
+        .cyber-container::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            width: 20px;
+            height: 20px;
+            border-bottom: 4px solid var(--accent-pink);
+            border-right: 4px solid var(--accent-pink);
+        }
+
+        .header {
+            border-bottom: 1px solid rgba(255, 0, 127, 0.3);
+            padding-bottom: 24px;
+            margin-bottom: 32px;
+        }
+
+        .title {
+            font-size: 1.75rem;
+            line-height: 1.4;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+
+        .title-accent {
+            color: var(--accent-pink);
+            text-shadow: 0 0 8px var(--accent-pink-glow);
+        }
+
+        .title-sub {
+            display: block;
+            font-size: 1.15rem;
+            margin-top: 8px;
+            color: var(--text-main);
+        }
+
+        .info-section {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .info-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .info-label {
+            font-size: 0.8rem;
+            color: var(--accent-pink);
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            font-weight: bold;
+            text-shadow: 0 0 5px rgba(255, 0, 127, 0.4);
+        }
+
+        .info-content {
+            font-size: 1.2rem;
+            background-color: rgba(10, 25, 60, 0.5);
+            padding: 14px 18px;
+            border-left: 3px solid var(--accent-pink);
+            letter-spacing: 0.05em;
+        }
+
+        /* モバイル端末向けの調整 */
+        @media (max-width: 480px) {
+            .cyber-container {
+                padding: 24px;
+            }
+            .title {
+                font-size: 1.4rem;
+            }
+            .title-sub {
+                font-size: 0.95rem;
+            }
+            .info-content {
+                font-size: 1.05rem;
+                padding: 10px 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="cyber-container">
+        <header class="header">
+            <h1 class="title">
+                <span class="title-accent">プロジェクトAI</span>
+                <span class="title-sub">〜人類最後のアップデートが始まる〜</span>
+            </h1>
+        </header>
+
+        <main class="info-section">
+            <div class="info-group">
+                <div class="info-label">日時</div>
+                <div class="info-content">9月5日（土）　9:20 - 15:00</div>
+            </div>
+
+            <div class="info-group">
+                <div class="info-label">場所</div>
+                <div class="info-content">HR棟4階 1年4組</div>
+            </div>
+        </main>
+    </div>
+
+</body>
+</html>
