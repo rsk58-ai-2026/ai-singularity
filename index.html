@@ -30,7 +30,7 @@
             justify-content: center;
             align-items: flex-start;
             padding: 40px 20px;
-            /* サイバー風の背景グリッド */
+            /* サイバー風の背景グリッド（アニメーションはしません） */
             background-image: 
                 linear-gradient(var(--grid-color) 1px, transparent 1px),
                 linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
@@ -85,10 +85,9 @@
         }
 
         /* 演出制限（reduce-motionクラス付与時）のCSS上書き */
-        /* ※完全に全ての動きを殺さず、目に優しく滑らかなトランジション等は維持して「味気なさ」を回避します */
         body.reduce-motion::after {
-            animation: none !important; /* 激しい砂嵐の動きを止める */
-            opacity: 0.02 !important; /* 静止した超微細なノイズとして薄く残す */
+            opacity: 0 !important;
+            animation: none !important;
         }
 
         body.reduce-motion.glitch-active {
@@ -118,59 +117,20 @@
         }
 
         body.reduce-motion .freeze-overlay.active {
-            animation: none !important; /* 激しい画面ブレを防止 */
+            animation: none !important;
         }
 
         body.reduce-motion .loader.fade-out {
             animation: none !important;
             opacity: 0 !important;
-            transition: opacity 0.8s ease !important; /* フェードアウトは滑らかに行い質感を維持 */
+            transition: none !important;
         }
 
         /* -----------------------------------------
-           砂嵐（スノーノイズ）オーバーレイ
+           砂嵐（スノーノイズ）オーバーレイ：非表示化
         ----------------------------------------- */
         body::after {
-            content: '';
-            position: fixed;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            /* 砂嵐テクスチャの再現 */
-            background: repeating-linear-gradient(
-                0deg,
-                rgba(255, 255, 255, 0.04),
-                rgba(255, 255, 255, 0.04) 1px,
-                transparent 1px,
-                transparent 2px
-            ), repeating-linear-gradient(
-                90deg,
-                rgba(255, 255, 255, 0.04),
-                rgba(255, 255, 255, 0.04) 1px,
-                transparent 1px,
-                transparent 2px
-            );
-            background-size: 3px 3px;
-            opacity: 0.02; /* 常に極めて薄くノイズを走らせ、味気なさを解消 */
-            pointer-events: none;
-            z-index: 9990; /* ローダーの下、コンテンツの上 */
-            transition: opacity 0.3s ease;
-        }
-
-        /* グリッチ発生時も上品なブレ幅に抑制 */
-        body.glitch-active::after {
-            opacity: 0.08;
-            animation: snow-noise 0.15s steps(3) infinite;
-        }
-
-        @keyframes snow-noise {
-            0% { transform: translate(0, 0); }
-            20% { transform: translate(-0.5%, -0.5%); }
-            40% { transform: translate(0.5%, 1%); }
-            60% { transform: translate(-1%, -1%); }
-            80% { transform: translate(0.5%, -0.5%); }
-            100% { transform: translate(0, 0); }
+            display: none; /* 砂嵐のアニメーション・描画を完全に無効化 */
         }
 
         /* -----------------------------------------
@@ -212,7 +172,7 @@
             z-index: 10001;
         }
 
-        /* 上下移動する光線 */
+        /* 起動画面の赤い光線（アニメーションを削除し、最上部に固定） */
         .scanline::after {
             content: '';
             position: absolute;
@@ -222,12 +182,7 @@
             height: 3px;
             background: var(--accent-pink);
             box-shadow: 0 0 12px var(--accent-pink-glow);
-            animation: scan 6s linear infinite; /* 移動速度を少し緩やかに */
-        }
-
-        @keyframes scan {
-            0% { top: -10px; }
-            100% { top: 100%; }
+            /* animationを削除し、背景の動きを停止しました */
         }
 
         .loader-content {
@@ -281,21 +236,12 @@
             transition: width 0.08s ease-out;
         }
 
-        /* システム起動完了時の画面のブレ（ノイズ・グリッチ）演出 */
-        /* ブレ幅をマイルドに抑えつつSF感を残します */
+        /* システム起動完了時のフェードアウト（ブレ・歪みアニメーションを削除しました） */
         .loader.fade-out {
             opacity: 0;
-            filter: blur(2px);
             pointer-events: none;
             transform: scale(1.02);
-            animation: loader-glitch 0.3s ease-out;
-        }
-
-        @keyframes loader-glitch {
-            0% { transform: scale(1) skewX(0deg); filter: contrast(1.1); }
-            30% { transform: scale(1.01) skewX(1deg); filter: contrast(1.2); }
-            60% { transform: scale(0.99) skewX(-1deg); }
-            100% { transform: scale(1.02) skewX(0deg); opacity: 0; }
+            transition: opacity 0.4s ease-out, transform 0.4s ease-out;
         }
 
 
@@ -360,7 +306,7 @@
         }
 
         /* -----------------------------------------
-           RGBスプリット（色分離）の調整
+           RGBスプリット（色分離）の強化
         ----------------------------------------- */
         .title-accent {
             color: var(--text-main);
@@ -381,7 +327,7 @@
             opacity: 0;
         }
 
-        /* 定期グリッチ時、疑似要素の色分離幅を抑えて心地よいブレに */
+        /* 定期グリッチ時、疑似要素を色分離させて振動 */
         .cyber-container.glitch .title-accent::before {
             opacity: 0.8;
             color: #00ffff; /* シアン */
@@ -396,17 +342,16 @@
             animation: rgb-split-right 0.15s steps(2) infinite;
         }
 
-        /* 色分離のズレ幅を最大2pxに抑えて視認性をキープ */
         @keyframes rgb-split-left {
-            0% { transform: translate(-2px, 1px) skewX(1deg); }
-            50% { transform: translate(1px, -1px) skewX(-1deg); }
-            100% { transform: translate(-1px, 0px) skewX(0deg); }
+            0% { transform: translate(-6px, 2px) skewX(5deg); }
+            50% { transform: translate(4px, -3px) skewX(-10deg); }
+            100% { transform: translate(-3px, -1px) skewX(2deg); }
         }
 
         @keyframes rgb-split-right {
-            0% { transform: translate(2px, -1px) skewX(-1deg); }
-            50% { transform: translate(-1px, 1px) skewX(1deg); }
-            100% { transform: translate(1px, 0px) skewX(0deg); }
+            0% { transform: translate(6px, -2px) skewX(-5deg); }
+            50% { transform: translate(-4px, 3px) skewX(10deg); }
+            100% { transform: translate(3px, 1px) skewX(-2deg); }
         }
 
         .title-sub {
@@ -475,19 +420,19 @@
         }
 
         /* -----------------------------------------
-           定期グリッチ（バグ風）アニメーション調整
+           定期グリッチ（バグ風）アニメーション
         ----------------------------------------- */
-        /* コンテナの引き裂き（clip-path）幅をスリム化し、不快な揺れをカット */
+        /* コンテナ全体の引き裂き（clip-path）とブレ */
         .cyber-container.glitch {
-            animation: container-glitch-complex 0.2s linear infinite;
+            animation: container-glitch-complex 0.25s linear infinite;
             box-shadow: 
-                -2px -1px 0px rgba(0, 255, 255, 0.6), /* シアン */
-                2px 1px 0px rgba(255, 0, 127, 0.6),   /* マゼンタ */
-                0 0 20px var(--accent-pink-glow),
-                inset 0 0 15px rgba(255, 0, 127, 0.15);
+                -4px -2px 0px rgba(0, 255, 255, 0.8), /* シアン */
+                4px 2px 0px rgba(255, 0, 127, 0.8),   /* マゼンタ */
+                0 0 25px var(--accent-pink-glow),
+                inset 0 0 15px rgba(255, 0, 127, 0.2);
         }
 
-        /* 主要テキストのRGB色ズレ幅をマイルドに */
+        /* 主要テキストのRGB色ズレ */
         .cyber-container.glitch .title-sub,
         .cyber-container.glitch .info-content,
         .cyber-container.glitch .game-desc,
@@ -495,70 +440,70 @@
             animation: text-glitch 0.2s linear infinite;
         }
 
-        /* 画面全体の過激なフラッシュ・色の反転・回転を廃止し、微細な明るさ・コントラストの明滅のみに変更 */
+        /* 画面全体のカラーフラッシュ・歪み変化（アニメーション・変形を完全に削除しました） */
         body.glitch-active {
-            animation: body-glitch-enhanced 0.25s steps(1) infinite;
+            /* 画面全体の回転・点滅・引き裂きなどの背景アニメーションを削除 */
         }
 
-        /* 引き裂きを細くスッキリとした横ノイズラインに調整 */
+        /* コンテナが水平方向に引き裂かれる（スライス）複雑なバグ挙動 */
         @keyframes container-glitch-complex {
-            0%, 100% {
+            0% {
                 transform: translate(0, 0) skew(0deg);
                 clip-path: inset(0 0 0 0);
             }
             10% {
-                transform: translate(-2px, 1px) skew(-0.5deg);
-                clip-path: inset(45% 0 52% 0);
+                transform: translate(-6px, 2px) skew(-3deg);
+                clip-path: inset(20% -10px 60% 0);
+            }
+            20% {
+                transform: translate(6px, -3px) skew(5deg);
+                clip-path: inset(70% 0 5% -10px);
             }
             30% {
-                transform: translate(2px, -1px) skew(0.5deg);
-                clip-path: inset(12% 0 85% 0);
+                transform: translate(-2px, 4px) skew(-1deg);
+                clip-path: inset(40% -10px 45% 0);
+            }
+            40% {
+                transform: translate(4px, -1px) skew(3deg);
+                clip-path: inset(10% 0 85% -10px);
             }
             50% {
-                transform: translate(-1px, 2px) skew(0deg);
-                clip-path: inset(80% 0 18% 0);
+                transform: translate(-5px, 5px) skew(-5deg);
+                clip-path: inset(85% -10px 3% 0);
+            }
+            60% {
+                transform: translate(3px, -4px) skew(2deg);
+                clip-path: inset(0 0 0 0);
             }
             70% {
-                transform: translate(1px, -1px) skew(-0.3deg);
-                clip-path: inset(30% 0 68% 0);
+                transform: translate(-4px, -2px) skew(-3deg);
+                clip-path: inset(30% -10px 50% 0);
+            }
+            80% {
+                transform: translate(5px, 3px) skew(4deg);
+                clip-path: inset(55% 0 25% -10px);
             }
             90% {
-                transform: translate(-2px, 1px) skew(0.3deg);
-                clip-path: inset(62% 0 35% 0);
+                transform: translate(-2px, -3px) skew(-2deg);
+                clip-path: inset(0 0 0 0);
+            }
+            100% {
+                transform: translate(0, 0) skew(0deg);
+                clip-path: inset(0 0 0 0);
             }
         }
 
         @keyframes text-glitch {
-            0%, 100% { text-shadow: -1.5px -0.5px 0 #00ffff, 1.5px 0.5px 0 var(--accent-pink); }
-            50% { text-shadow: 1.5px -1px 0 #00ffff, -1.5px 1px 0 var(--accent-pink); }
-        }
-
-        /* 画面全体の過度な色反転や回転を伴わない、洗練されたサイバー明滅効果 */
-        @keyframes body-glitch-enhanced {
-            0%, 100% {
-                filter: none;
-                transform: none;
-            }
-            20% {
-                filter: contrast(1.08) brightness(1.04);
-                transform: translate(0.5px, -0.5px);
-            }
-            40% {
-                filter: contrast(0.96);
-                transform: translate(-0.5px, 0.5px);
-            }
-            60% {
-                filter: brightness(0.98);
-                transform: translate(0.5px, 0.5px);
-            }
-            80% {
-                filter: contrast(1.04) brightness(1.02);
-                transform: translate(-0.5px, -0.5px);
-            }
+            0% { text-shadow: -3px -1px 0 #00ffff, 3px 1px 0 var(--accent-pink); }
+            20% { text-shadow: 3px -2px 0 #00ffff, -3px 2px 0 var(--accent-pink); }
+            40% { text-shadow: -4px 2px 0 #00ffff, 4px -2px 0 var(--accent-pink); }
+            60% { text-shadow: 2px 3px 0 #00ffff, -2px -3px 0 var(--accent-pink); }
+            80% { text-shadow: -3px -2px 0 #00ffff, 3px 2px 0 var(--accent-pink); }
+            100% { text-shadow: 3px 1px 0 #00ffff, -3px -1px 0 var(--accent-pink); }
         }
 
         /* -----------------------------------------
-           パズルゲーム用のスタイル
+           【新規】パズルゲーム用のスタイル
         ----------------------------------------- */
         .game-section {
             margin-top: 32px;
@@ -740,10 +685,10 @@
             animation: freeze-glitch 0.15s steps(2) infinite;
         }
 
-        /* 最終フリーズ画面のブレ幅も控えめに抑制 */
         @keyframes freeze-glitch {
-            0%, 100% { transform: translate(1px, -1px); filter: contrast(1.1); }
-            50% { transform: translate(-1px, 1px); filter: contrast(1.2); }
+            0% { transform: translate(2px, -2px) skew(1deg); filter: contrast(1.2); }
+            50% { transform: translate(-2px, 2px) skew(-1deg); filter: contrast(1.5); }
+            100% { transform: translate(0, 0) skew(0deg); }
         }
 
         .freeze-title {
@@ -1061,11 +1006,10 @@
                 }
 
                 update(level, time) {
-                    // 演出制限がONのときでもカチコチで味気なくならないよう、
-                    // 目に優しい極低速の滑らかな「呼吸パルス」のようなうねりを残します
+                    // 演出制限がONのときは、ノードの位置を完全に固定
                     if (reduceMotion) {
-                        this.x = this.baseX + Math.sin(time * 0.02 + this.id) * 0.8;
-                        this.y = this.baseY + Math.cos(time * 0.02 + this.id) * 0.8;
+                        this.x = this.baseX;
+                        this.y = this.baseY;
                         return;
                     }
 
@@ -1073,14 +1017,14 @@
                         this.x = this.baseX;
                         this.y = this.baseY;
                     } else if (level === 3) {
-                        // Level 3: AIの侵食に伴う微振動ノイズ（揺れ幅を1.2pxに抑制）
-                        this.x = this.baseX + Math.sin(time * 0.12 + this.id) * 1.2;
-                        this.y = this.baseY + Math.cos(time * 0.12 + this.id) * 1.2;
+                        // Level 3: AIの侵食に伴うわずかな微振動ノイズ
+                        this.x = this.baseX + Math.sin(time * 0.15 + this.id) * 2;
+                        this.y = this.baseY + Math.cos(time * 0.15 + this.id) * 2;
                     } else if (level === 4) {
-                        // Level 4: ノードの自律移動（パズル操作の快適性を高めるため、ブレ幅を35pxから12pxへマイルドに抑制）
-                        this.angle += this.speed * 0.5;
-                        this.x = this.baseX + Math.sin(this.angle) * 12 + Math.sin(time * 0.04) * 4;
-                        this.y = this.baseY + Math.cos(this.angle) * 12 + Math.cos(time * 0.04) * 4;
+                        // Level 4: ノードが不規則に歪んで自律移動
+                        this.angle += this.speed;
+                        this.x = this.baseX + Math.sin(this.angle) * 35 + Math.sin(time * 0.08) * 10;
+                        this.y = this.baseY + Math.cos(this.angle) * 35 + Math.cos(time * 0.08) * 10;
                     }
                 }
             }
@@ -1159,6 +1103,7 @@
                 if (currentLevel === 4) {
                     // Level 4: プレビュー画面のエラー表示
                     if (reduceMotion) {
+                        // 演出制限時は静的表示
                         ctx.fillStyle = "#ff0055";
                         ctx.font = "bold 10px monospace";
                         ctx.fillText("ERR_PAT_NULL", 5, height / 2);
@@ -1213,7 +1158,7 @@
                         const dotY = n1.y + (n2.y - n1.y) * segmentT;
                         ctx.fillStyle = "var(--accent-pink)";
                         ctx.shadowColor = "var(--accent-pink-glow)";
-                        ctx.shadowBlur = reduceMotion ? 3 : 6; // 制限時もうっすらとしたグローを残し、質感を保つ
+                        ctx.shadowBlur = reduceMotion ? 0 : 6; // 演出制限ON時はシャドウを消す
                         ctx.beginPath();
                         ctx.arc(dotX, dotY, 4, 0, Math.PI * 2);
                         ctx.fill();
@@ -1337,7 +1282,7 @@
                 });
             }
 
-            // 入力パターンへの合否チェック
+            // 入力パターンの合否チェック
             function checkPattern() {
                 const config = levelConfigs[currentLevel];
                 const correct = config.pattern;
@@ -1425,9 +1370,8 @@
                 ];
 
                 let msgIndex = 0;
-                // 演出制限がONのときは点滅や急激な揺れをなくす代わりに、
-                // 滑らかで静かなシステムエラーログが流れるような趣を作ります。
-                const intervalTime = reduceMotion ? 40 : 80;
+                // 演出制限がONのときはインターバル間隔をなくし一瞬で終了させる
+                const intervalTime = reduceMotion ? 0 : 100;
 
                 const addNextLog = () => {
                     if (msgIndex < errorMessages.length) {
@@ -1438,13 +1382,10 @@
                         errorLogOverlay.scrollTop = errorLogOverlay.scrollHeight;
                         msgIndex++;
 
-                        // 文字化け（演出制限ON時は急激なチラつきをなくすため固定化）
+                        // 高速文字化け（演出制限ON時は変更しない）
                         if (!reduceMotion) {
                             titleAccent.textContent = Math.random().toString(36).substring(2, 10);
                             titleAccent.setAttribute("data-text", titleAccent.textContent);
-                        } else {
-                            titleAccent.textContent = "SYS_ERR_04";
-                            titleAccent.setAttribute("data-text", "SYS_ERR_04");
                         }
 
                         if (intervalTime === 0) {
@@ -1454,13 +1395,13 @@
                         }
                     } else {
                         // 強制フリーズオーバーレイの表示へ移行
-                        const finishDelay = reduceMotion ? 100 : 600;
+                        const finishDelay = reduceMotion ? 0 : 600;
                         setTimeout(() => {
                             freezeOverlay.classList.add("active");
                             document.body.classList.add("frozen");
 
                             // タイトルをバグで固定化（演出制限ON時は静的文字に）
-                            const crashText = reduceMotion ? "SYS_OFFLINE" : "☠☠☠☠☠☠☠";
+                            const crashText = reduceMotion ? "ERROR" : "☠☠☠☠☠☠☠";
                             titleAccent.textContent = crashText;
                             titleAccent.setAttribute("data-text", crashText);
                         }, finishDelay);
@@ -1604,9 +1545,8 @@
                             return;
                         }
                         let scrambled = "";
-                        // 文字の判別がつきやすくなるよう、文字化け確率を 0.7 から 0.4 に、頻度を 60ms から 80ms に抑制
                         for (let i = 0; i < originalText.length; i++) {
-                            if (Math.random() < 0.4) {
+                            if (Math.random() < 0.7) {
                                 scrambled += glitchChars[Math.floor(Math.random() * glitchChars.length)];
                             } else {
                                 scrambled += originalText[i];
@@ -1614,7 +1554,7 @@
                         }
                         titleAccent.textContent = scrambled;
                         titleAccent.setAttribute("data-text", scrambled);
-                    }, 80);
+                    }, 60);
 
                     const minDuration = currentLevel === 3 ? 550 : 250;
                     const maxDuration = currentLevel === 3 ? 1100 : 600;
