@@ -45,6 +45,88 @@
         }
 
         /* -----------------------------------------
+           演出制限（LIMIT EFFECTS）用スタイル
+        ----------------------------------------- */
+        .effects-toggle-btn {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 10005;
+            background: rgba(6, 15, 37, 0.85);
+            color: var(--accent-pink);
+            border: 1px solid var(--accent-pink);
+            padding: 8px 14px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.75rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            box-shadow: 0 0 10px rgba(255, 0, 127, 0.2);
+            transition: all 0.2s ease;
+        }
+
+        .effects-toggle-btn:hover {
+            background: var(--accent-pink);
+            color: #fff;
+            box-shadow: 0 0 15px var(--accent-pink-glow);
+        }
+
+        .effects-toggle-btn.active {
+            color: #00ffff;
+            border-color: #00ffff;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+        }
+
+        .effects-toggle-btn.active:hover {
+            background: #00ffff;
+            color: #030816;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.6);
+        }
+
+        /* 演出制限（reduce-motionクラス付与時）のCSS上書き */
+        body.reduce-motion::after {
+            opacity: 0 !important;
+            animation: none !important;
+        }
+
+        body.reduce-motion.glitch-active {
+            animation: none !important;
+            background-color: var(--bg-color) !important;
+            background-size: 30px 30px !important;
+            transform: none !important;
+            filter: none !important;
+        }
+
+        body.reduce-motion .cyber-container.glitch {
+            animation: none !important;
+            box-shadow: 0 0 15px var(--accent-pink-glow), inset 0 0 15px rgba(255, 0, 127, 0.1) !important;
+        }
+
+        body.reduce-motion .cyber-container.glitch .title-sub,
+        body.reduce-motion .cyber-container.glitch .info-content,
+        body.reduce-motion .cyber-container.glitch .game-desc,
+        body.reduce-motion .cyber-container.glitch .game-title {
+            animation: none !important;
+            text-shadow: none !important;
+        }
+
+        body.reduce-motion .title-accent::before,
+        body.reduce-motion .title-accent::after {
+            display: none !important;
+        }
+
+        body.reduce-motion .freeze-overlay.active {
+            animation: none !important;
+        }
+
+        body.reduce-motion .loader.fade-out {
+            animation: none !important;
+            opacity: 0 !important;
+            transition: none !important;
+        }
+
+        /* -----------------------------------------
            砂嵐（スノーノイズ）オーバーレイ
         ----------------------------------------- */
         body::after {
@@ -742,6 +824,13 @@
             body {
                 padding: 20px 10px;
             }
+            .effects-toggle-btn {
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                padding: 6px 10px;
+                font-size: 0.65rem;
+            }
             .cyber-container {
                 padding: 24px;
             }
@@ -767,6 +856,9 @@
 </head>
 <body class="loading">
 
+    <!-- 演出制限（LIMIT EFFECTS）切り替えボタン -->
+    <button id="effects-toggle" class="effects-toggle-btn" aria-label="演出制限モードの切り替え">LIMIT EFFECTS: OFF</button>
+
     <!-- システム起動（ブート）画面 -->
     <div id="loader" class="loader">
         <div class="scanline"></div>
@@ -783,7 +875,7 @@
     <div class="cyber-container">
         <header class="header">
             <h1 class="title">
-                <!-- data-text属性を新設。CSSでRGBスプリット処理に使用 -->
+                <!-- data-text属性。CSSでRGBスプリット処理に使用 -->
                 <span class="title-accent" data-text="プロジェクトAI">プロジェクトAI</span>
                 <span class="title-sub">〜人類最後のアップデートが始まる〜</span>
             </h1>
@@ -801,7 +893,7 @@
             </div>
         </main>
 
-        <!-- 【新規】パズルゲームセクション -->
+        <!-- パズルゲームセクション -->
         <section class="game-section">
             <div class="game-header">
                 <span class="game-alert-tag">⚠️ SYSTEM OVERRIDE DETECTED</span>
@@ -854,6 +946,35 @@
             const originalText = "プロジェクトAI";
             const glitchChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;':\",./<>?Pг0jэcт_A1プロジェトAI";
 
+            // 演出制限関連
+            const toggleBtn = document.getElementById("effects-toggle");
+            let reduceMotion = false;
+
+            toggleBtn.addEventListener("click", () => {
+                reduceMotion = !reduceMotion;
+                if (reduceMotion) {
+                    document.body.classList.add("reduce-motion");
+                    toggleBtn.classList.add("active");
+                    toggleBtn.textContent = "LIMIT EFFECTS: ON";
+                    
+                    // 実行中の一時的なグリッチを即座にリセット
+                    container.classList.remove("glitch");
+                    document.body.classList.remove("glitch-active");
+                    titleAccent.textContent = originalText;
+                    titleAccent.setAttribute("data-text", originalText);
+                } else {
+                    document.body.classList.remove("reduce-motion");
+                    toggleBtn.classList.remove("active");
+                    toggleBtn.textContent = "LIMIT EFFECTS: OFF";
+                    
+                    // Level 4のときはグリッチを復帰
+                    if (currentLevel === 4) {
+                        container.classList.add("glitch");
+                        document.body.classList.add("glitch-active");
+                    }
+                }
+            });
+
             // 起動中のシステム状況風メッセージ
             const statuses = [
                 "BOOT SEQUENCE ACTIVE",
@@ -878,21 +999,21 @@
             let gameTime = 0;
             let isLevel4Triggered = false;
 
-            // 各レベルの設定
+            // 各レベルの初期設定
             const levelConfigs = {
                 1: {
                     gridSize: 3,
-                    pattern: [0, 1, 4, 7, 8], // Z字風
+                    pattern: [], 
                     status: "SECTOR 01: COGNITIVE DECRYPT"
                 },
                 2: {
                     gridSize: 4,
-                    pattern: [0, 5, 10, 15, 14, 13], // 複雑な流れ
+                    pattern: [], 
                     status: "SECTOR 02: SYMMETRIC BYPASS"
                 },
                 3: {
                     gridSize: 5,
-                    pattern: [0, 6, 12, 18, 24, 23, 22], // 長いライン
+                    pattern: [], 
                     status: "SECTOR 03: EXTRUSION NOISE DETECTED"
                 },
                 4: {
@@ -901,6 +1022,79 @@
                     status: "FATAL: COGNITIVE EXCLUSION"
                 }
             };
+
+            // 安全な一筆書きランダムパス生成（隣接するノードを移動）
+            function generateRandomPattern(gridSize, length) {
+                let attempts = 0;
+                while (attempts < 500) {
+                    attempts++;
+                    let r = Math.floor(Math.random() * gridSize);
+                    let c = Math.floor(Math.random() * gridSize);
+                    let path = [r * gridSize + c];
+                    let success = true;
+                    
+                    let currentR = r;
+                    let currentC = c;
+
+                    for (let i = 1; i < length; i++) {
+                        let neighbors = [];
+                        // 8方向の隣接判定（上下左右および斜め）
+                        for (let dr = -1; dr <= 1; dr++) {
+                            for (let dc = -1; dc <= 1; dc++) {
+                                if (dr === 0 && dc === 0) continue;
+                                let nr = currentR + dr;
+                                let nc = currentC + dc;
+                                if (nr >= 0 && nr < gridSize && nc >= 0 && nc < gridSize) {
+                                    let nid = nr * gridSize + nc;
+                                    if (!path.includes(nid)) {
+                                        neighbors.push({ r: nr, c: nc, id: nid });
+                                    }
+                                }
+                            }
+                        }
+                        if (neighbors.length === 0) {
+                            success = false;
+                            break;
+                        }
+                        let next = neighbors[Math.floor(Math.random() * neighbors.length)];
+                        path.push(next.id);
+                        currentR = next.r;
+                        currentC = next.c;
+                    }
+                    if (success) {
+                        return path;
+                    }
+                }
+                // 安全用のフォールバックパターン
+                let fallback = [];
+                for (let i = 0; i < length; i++) {
+                    fallback.push(i % (gridSize * gridSize));
+                }
+                return fallback;
+            }
+
+            // 各レベルに適合したランダムパスの割り当て
+            function setupLevelPattern() {
+                const config = levelConfigs[currentLevel];
+                if (!config) return;
+                
+                // Level 4は演出用の固定ダミーを適用
+                if (currentLevel === 4) {
+                    config.pattern = [1, 24, 99, -5];
+                    return;
+                }
+                
+                let length;
+                if (currentLevel === 1) {
+                    length = Math.floor(Math.random() * 2) + 4; // 4〜5ノード
+                } else if (currentLevel === 2) {
+                    length = Math.floor(Math.random() * 2) + 5; // 5〜6ノード
+                } else if (currentLevel === 3) {
+                    length = Math.floor(Math.random() * 2) + 6; // 6〜7ノード
+                }
+                
+                config.pattern = generateRandomPattern(config.gridSize, length);
+            }
 
             // ノードクラスの定義
             class Node {
@@ -916,6 +1110,13 @@
                 }
 
                 update(level, time) {
+                    // 演出制限がONのときは、ノードの位置を完全に固定
+                    if (reduceMotion) {
+                        this.x = this.baseX;
+                        this.y = this.baseY;
+                        return;
+                    }
+
                     if (level <= 2) {
                         this.x = this.baseX;
                         this.y = this.baseY;
@@ -924,7 +1125,7 @@
                         this.x = this.baseX + Math.sin(time * 0.15 + this.id) * 2;
                         this.y = this.baseY + Math.cos(time * 0.15 + this.id) * 2;
                     } else if (level === 4) {
-                        // Level 4: ノードが生き物のように不規則に歪んで自律移動
+                        // Level 4: ノードが不規則に歪んで自律移動
                         this.angle += this.speed;
                         this.x = this.baseX + Math.sin(this.angle) * 35 + Math.sin(time * 0.08) * 10;
                         this.y = this.baseY + Math.cos(this.angle) * 35 + Math.cos(time * 0.08) * 10;
@@ -935,6 +1136,10 @@
             // ノードの配置初期化
             function initNodes() {
                 nodes = [];
+                
+                // 動的ランダムパターンの計算・設定
+                setupLevelPattern();
+
                 const config = levelConfigs[currentLevel];
                 if (!config) return;
                 const N = config.gridSize;
@@ -1000,7 +1205,16 @@
                 });
 
                 if (currentLevel === 4) {
-                    // Level 4: プレビュー画面自体が歪んでバグる
+                    // Level 4: プレビュー画面のエラー表示
+                    if (reduceMotion) {
+                        // 演出制限時は静的表示
+                        ctx.fillStyle = "#ff0055";
+                        ctx.font = "bold 10px monospace";
+                        ctx.fillText("ERR_PAT_NULL", 5, height / 2);
+                        ctx.fillText("AI_OVERRUN", 5, height / 2 + 12);
+                        return;
+                    }
+
                     ctx.strokeStyle = "rgba(255, 0, 127, 0.8)";
                     ctx.lineWidth = 1.5;
                     ctx.beginPath();
@@ -1048,7 +1262,7 @@
                         const dotY = n1.y + (n2.y - n1.y) * segmentT;
                         ctx.fillStyle = "var(--accent-pink)";
                         ctx.shadowColor = "var(--accent-pink-glow)";
-                        ctx.shadowBlur = 6;
+                        ctx.shadowBlur = reduceMotion ? 0 : 6; // 演出制限ON時はシャドウを消す
                         ctx.beginPath();
                         ctx.arc(dotX, dotY, 4, 0, Math.PI * 2);
                         ctx.fill();
@@ -1072,7 +1286,7 @@
                 if (currentPath.length > 0) {
                     ctx.strokeStyle = "var(--accent-pink)";
                     ctx.shadowColor = "var(--accent-pink-glow)";
-                    ctx.shadowBlur = 12 * window.devicePixelRatio;
+                    ctx.shadowBlur = reduceMotion ? 0 : 12 * window.devicePixelRatio;
                     ctx.lineWidth = 4 * window.devicePixelRatio;
                     ctx.lineCap = "round";
                     ctx.lineJoin = "round";
@@ -1122,8 +1336,8 @@
                     }
                 });
 
-                // Level 3以降、画面に不規則な走査ノイズを混入
-                if (currentLevel === 3 && Math.random() < 0.08) {
+                // Level 3以降、画面に不規則な走査ノイズを混入（演出制限ON時は描画しない）
+                if (currentLevel === 3 && Math.random() < 0.08 && !reduceMotion) {
                     ctx.fillStyle = "rgba(255, 0, 127, 0.15)";
                     ctx.fillRect(Math.random() * width, Math.random() * height, Math.random() * width, 4 * window.devicePixelRatio);
                 }
@@ -1160,8 +1374,8 @@
                     if (dist < n.radius * 1.8) {
                         if (!currentPath.includes(n.id)) {
                             currentPath.push(n.id);
-                            // 軽微な電子グリッチを発生
-                            if (Math.random() < 0.4) {
+                            // 軽微な電子グリッチを発生（演出制限ON時は行わない）
+                            if (Math.random() < 0.4 && !reduceMotion) {
                                 container.classList.add("glitch");
                                 setTimeout(() => {
                                     if (currentLevel !== 4) container.classList.remove("glitch");
@@ -1206,14 +1420,20 @@
                     statusText.textContent = "ACCESS DENIED. RE-INPUT PATTERN.";
                     statusText.style.color = "#ff0055";
 
-                    document.body.classList.add("glitch-active");
-                    setTimeout(() => {
-                        if (currentLevel !== 4) {
-                            document.body.classList.remove("glitch-active");
-                        }
-                    }, 300);
+                    if (!reduceMotion) {
+                        document.body.classList.add("glitch-active");
+                        setTimeout(() => {
+                            if (currentLevel !== 4) {
+                                document.body.classList.remove("glitch-active");
+                            }
+                        }, 300);
+                    }
 
                     currentPath = [];
+                    // 不合格時、一瞬待ってから別のランダムパターンにリビルド
+                    setTimeout(() => {
+                        initNodes();
+                    }, 500);
                 }
             }
 
@@ -1222,9 +1442,11 @@
                 if (isLevel4Triggered) return;
                 isLevel4Triggered = true;
 
-                // システムの完全暴走フラグセット
-                document.body.classList.add("glitch-active");
-                container.classList.add("glitch");
+                // システムの完全暴走フラグセット（演出制限ON時はCSSアニメを抑制）
+                if (!reduceMotion) {
+                    document.body.classList.add("glitch-active");
+                    container.classList.add("glitch");
+                }
 
                 const statusText = document.getElementById("game-status-text");
                 statusText.textContent = "FATAL: AI COGNITIVE OVERRIDE";
@@ -1252,7 +1474,10 @@
                 ];
 
                 let msgIndex = 0;
-                const errorInterval = setInterval(() => {
+                // 演出制限がONのときはインターバル間隔をなくし一瞬で終了させる
+                const intervalTime = reduceMotion ? 0 : 100;
+
+                const addNextLog = () => {
                     if (msgIndex < errorMessages.length) {
                         const line = document.createElement("div");
                         line.textContent = `> ${errorMessages[msgIndex]}`;
@@ -1261,23 +1486,33 @@
                         errorLogOverlay.scrollTop = errorLogOverlay.scrollHeight;
                         msgIndex++;
 
-                        // 高速文字化けを同時進行
-                        titleAccent.textContent = Math.random().toString(36).substring(2, 10);
-                        titleAccent.setAttribute("data-text", titleAccent.textContent);
-                    } else {
-                        clearInterval(errorInterval);
+                        // 高速文字化け（演出制限ON時は変更しない）
+                        if (!reduceMotion) {
+                            titleAccent.textContent = Math.random().toString(36).substring(2, 10);
+                            titleAccent.setAttribute("data-text", titleAccent.textContent);
+                        }
 
-                        // 強制フリーズオーバーレイの表示
+                        if (intervalTime === 0) {
+                            addNextLog();
+                        } else {
+                            setTimeout(addNextLog, intervalTime);
+                        }
+                    } else {
+                        // 強制フリーズオーバーレイの表示へ移行
+                        const finishDelay = reduceMotion ? 0 : 600;
                         setTimeout(() => {
                             freezeOverlay.classList.add("active");
                             document.body.classList.add("frozen");
 
-                            // タイトルをバグで固定化
-                            titleAccent.textContent = "☠☠☠☠☠☠☠";
-                            titleAccent.setAttribute("data-text", "☠☠☠☠☠☠☠");
-                        }, 600);
+                            // タイトルをバグで固定化（演出制限ON時は静的文字に）
+                            const crashText = reduceMotion ? "ERROR" : "☠☠☠☠☠☠☠";
+                            titleAccent.textContent = crashText;
+                            titleAccent.setAttribute("data-text", crashText);
+                        }, finishDelay);
                     }
-                }, 100);
+                };
+
+                addNextLog();
             }
 
             // 操作イベント処理のバインド
@@ -1313,7 +1548,7 @@
             window.addEventListener("mousemove", handleMove);
             window.addEventListener("mouseup", handleEnd);
 
-            // スマホタッチ操作 (touch-action: none でブラウザスクロール抑制済)
+            // スマホタッチ操作
             gameCanvas.addEventListener("touchstart", (e) => {
                 e.preventDefault();
                 handleStart(e);
@@ -1385,8 +1620,10 @@
                     maxDelay = 2500;
                 } else if (currentLevel === 4) {
                     // レベル4は常に強制グリッチ状態
-                    container.classList.add("glitch");
-                    document.body.classList.add("glitch-active");
+                    if (!reduceMotion) {
+                        container.classList.add("glitch");
+                        document.body.classList.add("glitch-active");
+                    }
                     return;
                 }
 
@@ -1395,12 +1632,22 @@
                 setTimeout(() => {
                     if (currentLevel === 4) return;
 
+                    // 演出制限中はビジュアル効果を一切行わずスキップ
+                    if (reduceMotion) {
+                        startGlitchLoop();
+                        return;
+                    }
+
                     // 各種クラスを付与し、CSS側のダイナミックなグリッチ効果を発動
                     container.classList.add("glitch");
                     document.body.classList.add("glitch-active");
 
                     // グリッチ中の高速文字化け処理
                     let scrambleInterval = setInterval(() => {
+                        if (reduceMotion) {
+                            clearInterval(scrambleInterval);
+                            return;
+                        }
                         let scrambled = "";
                         for (let i = 0; i < originalText.length; i++) {
                             if (Math.random() < 0.7) {
