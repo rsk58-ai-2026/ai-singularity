@@ -13,6 +13,8 @@
             --text-main: #ffffff;
             --text-sub: #a0aec0;
             --grid-color: rgba(0, 150, 255, 0.05);
+            --warning-red: #ff3333;
+            --warning-red-glow: rgba(255, 51, 51, 0.5);
         }
 
         * {
@@ -45,7 +47,7 @@
         }
 
         /* -----------------------------------------
-           【新規】砂嵐（スノーノイズ）オーバーレイ
+           砂嵐（スノーノイズ）オーバーレイ
         ----------------------------------------- */
         body::after {
             content: '';
@@ -283,7 +285,7 @@
         }
 
         /* -----------------------------------------
-           【新規】RGBスプリット（色分離）の強化
+           RGBスプリット（色分離）の強化
         ----------------------------------------- */
         .title-accent {
             color: var(--text-main);
@@ -399,7 +401,7 @@
         /* -----------------------------------------
            定期グリッチ（バグ風）アニメーション
         ----------------------------------------- */
-        /* 【強化】コンテナ全体の引き裂き（clip-path）とブレ */
+        /* コンテナ全体の引き裂き（clip-path）とブレ */
         .cyber-container.glitch {
             animation: container-glitch-complex 0.25s linear infinite;
             box-shadow: 
@@ -415,7 +417,7 @@
             animation: text-glitch 0.2s linear infinite;
         }
 
-        /* 【強化】画面全体のカラーフラッシュ・歪み変化 */
+        /* 画面全体のカラーフラッシュ・歪み変化 */
         body.glitch-active {
             animation: body-glitch-enhanced 0.3s steps(1) infinite;
             background-size: 15px 120px; /* 一瞬サイズが激しく変わる */
@@ -522,6 +524,197 @@
             }
         }
 
+        /* -----------------------------------------
+           【新規】警告（SENSORY WARNING）モーダル
+        ----------------------------------------- */
+        .warning-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: var(--bg-color);
+            background-image: 
+                linear-gradient(var(--grid-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            background-size: 30px 30px;
+            z-index: 20000; /* ローダーの上に最前面表示 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            transition: opacity 0.5s ease;
+        }
+
+        /* フェードアウト処理 */
+        .warning-modal.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .warning-box {
+            width: 100%;
+            max-width: 520px;
+            background-color: rgba(6, 15, 37, 0.95);
+            border: 1px solid var(--warning-red);
+            box-shadow: 0 0 20px rgba(255, 51, 51, 0.4), inset 0 0 15px rgba(255, 51, 51, 0.1);
+            padding: 32px;
+            position: relative;
+            text-align: center;
+        }
+
+        /* 警告用コーナーライン */
+        .warning-box::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            width: 15px;
+            height: 15px;
+            border-top: 3px solid var(--warning-red);
+            border-left: 3px solid var(--warning-red);
+        }
+
+        .warning-box::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            width: 15px;
+            height: 15px;
+            border-bottom: 3px solid var(--warning-red);
+            border-right: 3px solid var(--warning-red);
+        }
+
+        .warning-header {
+            font-size: 1.1rem;
+            color: var(--warning-red);
+            font-weight: bold;
+            letter-spacing: 0.3em;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            text-shadow: 0 0 8px var(--warning-red-glow);
+        }
+
+        .warning-title {
+            font-size: 0.95rem;
+            color: var(--text-main);
+            font-weight: bold;
+            letter-spacing: 0.05em;
+            margin-bottom: 16px;
+            line-height: 1.4;
+        }
+
+        .warning-text {
+            font-size: 0.85rem;
+            color: var(--text-sub);
+            line-height: 1.6;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+
+        .warning-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btn {
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: bold;
+            letter-spacing: 0.1em;
+            padding: 14px 20px;
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+
+        .btn-active {
+            background-color: transparent;
+            color: var(--accent-pink);
+            border-color: var(--accent-pink);
+            box-shadow: 0 0 10px rgba(255, 0, 127, 0.3);
+        }
+
+        .btn-active:hover {
+            background-color: var(--accent-pink);
+            color: #ffffff;
+            box-shadow: 0 0 20px var(--accent-pink-glow);
+        }
+
+        .btn-safe {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.25);
+        }
+
+        .btn-safe:hover {
+            background-color: #ffffff;
+            color: var(--bg-color);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+        }
+
+
+        /* -----------------------------------------
+           【新規】セーフモード（演出OFF）時の強制上書き設定
+        ----------------------------------------- */
+        body.safe-mode {
+            background-image: 
+                linear-gradient(var(--grid-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px) !important;
+            background-size: 30px 30px !important;
+            background-position: 0 0 !important;
+            animation: none !important;
+        }
+
+        body.safe-mode::after {
+            display: none !important;
+            content: none !important;
+            animation: none !important;
+        }
+
+        body.safe-mode .scanline,
+        body.safe-mode .scanline::after {
+            display: none !important;
+            animation: none !important;
+        }
+
+        /* フェードイン時の過度な移動（translate）演出をカット */
+        body.safe-mode .cyber-container {
+            transform: none !important;
+            transition: opacity 0.3s ease !important;
+        }
+
+        body.safe-mode .cyber-container.active .header,
+        body.safe-mode .cyber-container.active .info-group {
+            transform: none !important;
+            opacity: 1 !important;
+            transition: opacity 0.3s ease !important;
+            transition-delay: 0s !important; /* 遅延を排除 */
+        }
+
+        /* RGBスプリット用の疑似要素を無効化 */
+        body.safe-mode .title-accent::before,
+        body.safe-mode .title-accent::after {
+            display: none !important;
+            content: none !important;
+        }
+
+        /* 動的グリッチの完全抑止 */
+        body.safe-mode .cyber-container.glitch {
+            animation: none !important;
+            box-shadow: 0 0 15px var(--accent-pink-glow), inset 0 0 15px rgba(255, 0, 127, 0.1) !important;
+        }
+
+        body.safe-mode .cyber-container.glitch .title-sub,
+        body.safe-mode .cyber-container.glitch .info-content {
+            animation: none !important;
+            text-shadow: none !important;
+        }
+
+
         /* モバイル端末向けの調整 */
         @media (max-width: 480px) {
             .cyber-container {
@@ -540,10 +733,45 @@
             .loader-percent {
                 font-size: 2.8rem;
             }
+            .warning-box {
+                padding: 24px;
+            }
+            .warning-header {
+                font-size: 1rem;
+            }
+            .warning-title {
+                font-size: 0.85rem;
+            }
+            .warning-text {
+                font-size: 0.75rem;
+                margin-bottom: 24px;
+            }
+            .btn {
+                font-size: 0.8rem;
+                padding: 12px 16px;
+            }
         }
     </style>
 </head>
 <body class="loading">
+
+    <!-- 選択（警告）モーダル -->
+    <div id="warning-modal" class="warning-modal">
+        <div class="warning-box">
+            <div class="warning-header">⚠️ WARNING</div>
+            <div class="warning-body">
+                <p class="warning-title">SENSORY OVERLOAD / PHOTOSENSITIVE SEIZURE ALERT</p>
+                <p class="warning-text">
+                    本インターフェースには、激しいカラーフラッシュ、画面の歪み、高速な文字化け、色分離（RGBスプリット）などの動的なグリッチ演出が含まれています。<br><br>
+                    光感受性発作の既往歴がある方、または体調が優れない方は、すべての動的視覚効果を完全に遮断する「SAFE MODE」での起動を選択してください。
+                </p>
+            </div>
+            <div class="warning-buttons">
+                <button id="btn-active" class="btn btn-active">BOOT SYSTEM (ACTIVE EFFECT)</button>
+                <button id="btn-safe" class="btn btn-safe">BOOT SYSTEM (SAFE MODE)</button>
+            </div>
+        </div>
+    </div>
 
     <!-- システム起動（ブート）画面 -->
     <div id="loader" class="loader">
@@ -561,7 +789,6 @@
     <div class="cyber-container">
         <header class="header">
             <h1 class="title">
-                <!-- data-text属性を新設。CSSでRGBスプリット処理に使用 -->
                 <span class="title-accent" data-text="プロジェクトAI">プロジェクトAI</span>
                 <span class="title-sub">〜人類最後のアップデートが始まる〜</span>
             </h1>
@@ -587,6 +814,9 @@
             const statusEl = document.getElementById("status");
             const loader = document.getElementById("loader");
             const container = document.querySelector(".cyber-container");
+            const warningModal = document.getElementById("warning-modal");
+            const btnActive = document.getElementById("btn-active");
+            const btnSafe = document.getElementById("btn-safe");
 
             // 文字化け演出用のターゲット
             const titleAccent = document.querySelector(".title-accent");
@@ -603,8 +833,45 @@
             ];
 
             let progress = 0;
+            let isSafeMode = false;
+
+            // -----------------------------------------
+            // モーダル選択処理
+            // -----------------------------------------
+            
+            // ACTIVE EFFECT（通常起動）
+            btnActive.addEventListener("click", () => {
+                warningModal.classList.add("fade-out");
+                setTimeout(() => {
+                    warningModal.style.display = "none";
+                    // 警告画面が消えたのち、ローディング演出開始
+                    setTimeout(updateLoader, 200);
+                }, 500);
+            });
+
+            // SAFE MODE（セーフモード）
+            btnSafe.addEventListener("click", () => {
+                isSafeMode = true;
+                
+                // CSSとDOMの制御設定
+                document.body.classList.add("safe-mode");
+                document.body.classList.remove("loading");
+                warningModal.classList.add("fade-out");
+                
+                setTimeout(() => {
+                    warningModal.style.display = "none";
+                    loader.style.display = "none"; // ローダー画面は表示せずスキップ
+                    container.classList.add("active"); // メインコンテンツを表示
+                }, 500);
+            });
+
+            // -----------------------------------------
+            // ローディング & グリッチロジック
+            // -----------------------------------------
 
             function updateLoader() {
+                if (isSafeMode) return;
+
                 const increment = Math.floor(Math.random() * 8) + 2; 
                 progress = Math.min(progress + increment, 100);
 
@@ -642,29 +909,35 @@
                 }
             }
 
-            // グリッチ（バグ）演出を再帰的に実行するループ処理
+            // グリッチ演出を再帰的に実行するループ処理
             function startGlitchLoop() {
+                if (isSafeMode) return; // セーフモード選択時はループを一切開始しない
+
                 const minDelay = 5000;
                 const maxDelay = 12000;
                 const randomDelay = Math.floor(Math.random() * (maxDelay - minDelay + 1)) + minDelay;
 
                 setTimeout(() => {
+                    if (isSafeMode) return;
+
                     // 各種クラスを付与し、CSS側のダイナミックなグリッチ効果を発動
                     container.classList.add("glitch");
                     document.body.classList.add("glitch-active");
 
-                    // 【新規】グリッチ中の高速文字化け処理
+                    // グリッチ中の高速文字化け処理
                     let scrambleInterval = setInterval(() => {
+                        if (isSafeMode) {
+                            clearInterval(scrambleInterval);
+                            return;
+                        }
                         let scrambled = "";
                         for (let i = 0; i < originalText.length; i++) {
-                            // 確率でノイズキャラに変換し、一部は元テキストの形を残す
                             if (Math.random() < 0.7) {
                                 scrambled += glitchChars[Math.floor(Math.random() * glitchChars.length)];
                             } else {
                                 scrambled += originalText[i];
                             }
                         }
-                        // テキストとCSS属性(data-text)を同時に書き換えてRGBスプリットも連動させる
                         titleAccent.textContent = scrambled;
                         titleAccent.setAttribute("data-text", scrambled);
                     }, 60);
@@ -678,7 +951,7 @@
                         container.classList.remove("glitch");
                         document.body.classList.remove("glitch-active");
 
-                        // 【新規】文字化けを解除し、元のテキストに戻す
+                        // 文字化けを解除し、元のテキストに戻す
                         clearInterval(scrambleInterval);
                         titleAccent.textContent = originalText;
                         titleAccent.setAttribute("data-text", originalText);
@@ -689,9 +962,6 @@
 
                 }, randomDelay);
             }
-
-            // 起動処理開始
-            setTimeout(updateLoader, 300);
         });
     </script>
 </body>
