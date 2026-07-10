@@ -9,10 +9,10 @@
             --bg-color: #030816;
             --panel-bg: rgba(6, 15, 37, 0.85);
             --accent-pink: #ff007f;
-            --accent-pink-glow: rgba(255, 0, 127, 0.4); /* グロウ効果を少し控えめに */
+            --accent-pink-glow: rgba(255, 0, 127, 0.6);
             --text-main: #ffffff;
             --text-sub: #a0aec0;
-            --grid-color: rgba(0, 150, 255, 0.04); /* グリッドをやや薄く */
+            --grid-color: rgba(0, 150, 255, 0.05);
         }
 
         * {
@@ -28,17 +28,152 @@
             min-height: 100vh;
             display: flex;
             justify-content: center;
-            align-items: center;
-            padding: 20px;
+            align-items: flex-start;
+            padding: 40px 20px;
+            /* サイバー風の背景グリッド */
             background-image: 
                 linear-gradient(var(--grid-color) 1px, transparent 1px),
                 linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
             background-size: 30px 30px;
             overflow-x: hidden;
+            position: relative;
         }
 
-        body.loading {
+        /* 起動中およびゲーム暴走フリーズ時のスクロール防止用クラス */
+        body.loading, body.frozen {
             overflow: hidden;
+        }
+
+        /* -----------------------------------------
+           演出制限（LIMIT EFFECTS）用スタイル
+        ----------------------------------------- */
+        .effects-toggle-btn {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 10005;
+            background: rgba(6, 15, 37, 0.85);
+            color: var(--accent-pink);
+            border: 1px solid var(--accent-pink);
+            padding: 8px 14px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.75rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            box-shadow: 0 0 10px rgba(255, 0, 127, 0.2);
+            transition: all 0.2s ease;
+        }
+
+        .effects-toggle-btn:hover {
+            background: var(--accent-pink);
+            color: #fff;
+            box-shadow: 0 0 15px var(--accent-pink-glow);
+        }
+
+        .effects-toggle-btn.active {
+            color: #00ffff;
+            border-color: #00ffff;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+        }
+
+        .effects-toggle-btn.active:hover {
+            background: #00ffff;
+            color: #030816;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.6);
+        }
+
+        /* 演出制限（reduce-motionクラス付与時）のCSS上書き */
+        body.reduce-motion::after {
+            opacity: 0 !important;
+            animation: none !important;
+        }
+
+        body.reduce-motion.glitch-active {
+            animation: none !important;
+            background-color: var(--bg-color) !important;
+            background-size: 30px 30px !important;
+            transform: none !important;
+            filter: none !important;
+        }
+
+        body.reduce-motion .cyber-container.glitch {
+            animation: none !important;
+            box-shadow: 0 0 15px var(--accent-pink-glow), inset 0 0 15px rgba(255, 0, 127, 0.1) !important;
+        }
+
+        body.reduce-motion .cyber-container.glitch .title-sub,
+        body.reduce-motion .cyber-container.glitch .info-content,
+        body.reduce-motion .cyber-container.glitch .game-desc,
+        body.reduce-motion .cyber-container.glitch .game-title {
+            animation: none !important;
+            text-shadow: none !important;
+        }
+
+        body.reduce-motion .title-accent::before,
+        body.reduce-motion .title-accent::after {
+            display: none !important;
+        }
+
+        body.reduce-motion .freeze-overlay.active {
+            animation: none !important;
+        }
+
+        body.reduce-motion .loader.fade-out {
+            animation: none !important;
+            opacity: 0 !important;
+            transition: none !important;
+        }
+
+        /* -----------------------------------------
+           砂嵐（スノーノイズ）オーバーレイ
+        ----------------------------------------- */
+        body::after {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            /* 砂嵐テクスチャの再現 */
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(255, 255, 255, 0.06),
+                rgba(255, 255, 255, 0.06) 1px,
+                transparent 1px,
+                transparent 2px
+            ), repeating-linear-gradient(
+                90deg,
+                rgba(255, 255, 255, 0.06),
+                rgba(255, 255, 255, 0.06) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            background-size: 3px 3px;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 9990; /* ローダーの下、コンテンツの上 */
+        }
+
+        /* グリッチ発生時に砂嵐を激しく動かす */
+        body.glitch-active::after {
+            opacity: 1;
+            animation: snow-noise 0.1s steps(2) infinite;
+        }
+
+        @keyframes snow-noise {
+            0% { transform: translate(0, 0); }
+            10% { transform: translate(-1%, -1%); }
+            20% { transform: translate(1%, 2%); }
+            30% { transform: translate(-2%, -2%); }
+            40% { transform: translate(1%, 3%); }
+            50% { transform: translate(-1%, 1%); }
+            60% { transform: translate(2%, -1%); }
+            70% { transform: translate(-2%, 1%); }
+            80% { transform: translate(1%, -2%); }
+            90% { transform: translate(-1%, 2%); }
+            100% { transform: translate(0, 0); }
         }
 
         /* -----------------------------------------
@@ -61,9 +196,10 @@
             align-items: center;
             font-family: 'Courier New', Courier, monospace;
             overflow: hidden;
-            transition: opacity 0.5s cubic-bezier(0.19, 1, 0.22, 1), filter 0.5s, transform 0.5s;
+            transition: opacity 0.6s cubic-bezier(0.19, 1, 0.22, 1), filter 0.6s, transform 0.6s;
         }
 
+        /* 全画面を覆うブラウン管風の走査線 */
         .scanline {
             position: absolute;
             top: 0;
@@ -72,24 +208,24 @@
             height: 100%;
             background: linear-gradient(
                 rgba(18, 16, 16, 0) 50%, 
-                rgba(0, 0, 0, 0.1) 50%
+                rgba(0, 0, 0, 0.15) 50%
             );
             background-size: 100% 4px;
             pointer-events: none;
             z-index: 10001;
         }
 
-        /* 上下移動する光線を細く、動きをゆったりと変更 */
+        /* 上下移動する光線 */
         .scanline::after {
             content: '';
             position: absolute;
             top: -10px;
             left: 0;
             width: 100%;
-            height: 1.5px; /* 3px -> 1.5px に細分化 */
-            background: rgba(255, 0, 127, 0.6); /* 不透明度を下げて馴染ませる */
-            box-shadow: 0 0 8px var(--accent-pink-glow);
-            animation: scan 6s linear infinite; /* 4s -> 6s で上品な速度に */
+            height: 3px;
+            background: var(--accent-pink);
+            box-shadow: 0 0 12px var(--accent-pink-glow);
+            animation: scan 4s linear infinite;
         }
 
         @keyframes scan {
@@ -106,7 +242,7 @@
         .loader-status {
             font-size: 0.85rem;
             color: var(--accent-pink);
-            text-shadow: 0 0 6px var(--accent-pink-glow);
+            text-shadow: 0 0 8px var(--accent-pink-glow);
             letter-spacing: 0.25em;
             margin-bottom: 12px;
             font-weight: bold;
@@ -117,7 +253,7 @@
             font-size: 3.5rem;
             font-weight: 900;
             color: var(--text-main);
-            text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
             margin-bottom: 24px;
             letter-spacing: -0.05em;
         }
@@ -125,14 +261,15 @@
         .loader-bar-bg {
             width: 260px;
             max-width: 80vw;
-            height: 8px; /* 少しスリムに */
+            height: 10px;
             background: rgba(255, 255, 255, 0.05);
             margin: 0 auto;
-            border: 1px solid rgba(255, 0, 127, 0.25);
+            border: 1px solid rgba(255, 0, 127, 0.3);
             padding: 2px;
             box-sizing: content-box;
         }
 
+        /* セグメント化されたサイバー風インジケーター */
         .loader-bar {
             width: 0%;
             height: 100%;
@@ -143,24 +280,27 @@
                 transparent 6px, 
                 transparent 10px
             );
-            box-shadow: 0 0 8px var(--accent-pink-glow);
-            transition: width 0.05s ease-out;
+            box-shadow: 0 0 10px var(--accent-pink-glow);
+            transition: width 0.08s ease-out;
         }
 
-        /* グリッチ効果（ブレ）をマイルドに抑制 */
+        /* システム起動完了時の画面のブレ（ノイズ・グリッチ）演出 */
         .loader.fade-out {
             opacity: 0;
-            filter: blur(2px);
+            filter: hue-rotate(90deg) blur(4px);
             pointer-events: none;
-            transform: scale(1.02);
-            animation: loader-glitch 0.3s ease-out;
+            transform: scale(1.05);
+            animation: loader-glitch 0.4s ease-out;
         }
 
         @keyframes loader-glitch {
-            0% { transform: scale(1) skewX(0deg); }
-            30% { transform: scale(1.01) skewX(2deg); filter: blur(1px); }
-            60% { transform: scale(0.99) skewX(-1deg); }
-            100% { transform: scale(1.02); opacity: 0; }
+            0% { transform: scale(1) skewX(0deg); filter: hue-rotate(0deg) contrast(1.2); }
+            15% { transform: scale(1.03) skewX(4deg); filter: hue-rotate(45deg) contrast(1.5); }
+            30% { transform: scale(0.98) skewX(-4deg); }
+            45% { transform: scale(1.05) skewX(8deg) translateY(-3px); }
+            60% { transform: scale(1) skewX(-8deg) translateY(3px); }
+            75% { transform: scale(1.02) skewX(1deg); }
+            100% { transform: scale(1.05) skewX(0deg); opacity: 0; }
         }
 
 
@@ -172,29 +312,32 @@
             max-width: 600px;
             background-color: var(--panel-bg);
             border: 1px solid var(--accent-pink);
-            box-shadow: 0 0 12px var(--accent-pink-glow), inset 0 0 10px rgba(255, 0, 127, 0.05);
+            box-shadow: 0 0 15px var(--accent-pink-glow), inset 0 0 15px rgba(255, 0, 127, 0.1);
             padding: 40px;
             position: relative;
             
+            /* 初期状態：非表示・縮小 */
             opacity: 0;
-            transform: translateY(15px) scale(0.98); /* 移動幅を抑えてスムーズに */
-            transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            transform: translateY(25px) scale(0.97);
+            transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
+        /* 起動完了後に付与される表示クラス */
         .cyber-container.active {
             opacity: 1;
             transform: translateY(0) scale(1);
         }
 
+        /* 装飾用コーナーライン */
         .cyber-container::before {
             content: '';
             position: absolute;
             top: -2px;
             left: -2px;
-            width: 16px;
-            height: 16px;
-            border-top: 3px solid var(--accent-pink);
-            border-left: 3px solid var(--accent-pink);
+            width: 20px;
+            height: 20px;
+            border-top: 4px solid var(--accent-pink);
+            border-left: 4px solid var(--accent-pink);
         }
 
         .cyber-container::after {
@@ -202,14 +345,14 @@
             position: absolute;
             bottom: -2px;
             right: -2px;
-            width: 16px;
-            height: 16px;
-            border-bottom: 3px solid var(--accent-pink);
-            border-right: 3px solid var(--accent-pink);
+            width: 20px;
+            height: 20px;
+            border-bottom: 4px solid var(--accent-pink);
+            border-right: 4px solid var(--accent-pink);
         }
 
         .header {
-            border-bottom: 1px solid rgba(255, 0, 127, 0.2);
+            border-bottom: 1px solid rgba(255, 0, 127, 0.3);
             padding-bottom: 24px;
             margin-bottom: 32px;
         }
@@ -221,9 +364,53 @@
             letter-spacing: 0.05em;
         }
 
+        /* -----------------------------------------
+           RGBスプリット（色分離）の強化
+        ----------------------------------------- */
         .title-accent {
-            color: var(--accent-pink);
-            text-shadow: 0 0 6px var(--accent-pink-glow);
+            color: var(--text-main);
+            position: relative;
+            display: inline-block;
+        }
+
+        .title-accent::before,
+        .title-accent::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        /* 定期グリッチ時、疑似要素を色分離させて振動 */
+        .cyber-container.glitch .title-accent::before {
+            opacity: 0.8;
+            color: #00ffff; /* シアン */
+            z-index: -1;
+            animation: rgb-split-left 0.15s steps(2) infinite;
+        }
+
+        .cyber-container.glitch .title-accent::after {
+            opacity: 0.8;
+            color: var(--accent-pink); /* マゼンタ */
+            z-index: -2;
+            animation: rgb-split-right 0.15s steps(2) infinite;
+        }
+
+        @keyframes rgb-split-left {
+            0% { transform: translate(-6px, 2px) skewX(5deg); }
+            50% { transform: translate(4px, -3px) skewX(-10deg); }
+            100% { transform: translate(-3px, -1px) skewX(2deg); }
+        }
+
+        @keyframes rgb-split-right {
+            0% { transform: translate(6px, -2px) skewX(-5deg); }
+            50% { transform: translate(-4px, 3px) skewX(10deg); }
+            100% { transform: translate(3px, 1px) skewX(-2deg); }
         }
 
         .title-sub {
@@ -251,47 +438,399 @@
             text-transform: uppercase;
             letter-spacing: 0.2em;
             font-weight: bold;
-            text-shadow: 0 0 4px rgba(255, 0, 127, 0.3);
+            text-shadow: 0 0 5px rgba(255, 0, 127, 0.4);
         }
 
         .info-content {
             font-size: 1.2rem;
-            background-color: rgba(10, 25, 60, 0.4);
+            background-color: rgba(10, 25, 60, 0.5);
             padding: 14px 18px;
             border-left: 3px solid var(--accent-pink);
             letter-spacing: 0.05em;
         }
 
         /* -----------------------------------------
-           段階的表示（テンポを約2倍に高速化）
+           段階的表示（スタッガー効果）
         ----------------------------------------- */
         .cyber-container .header,
         .cyber-container .info-group {
             opacity: 0;
-            transform: translateY(10px);
-            transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            transform: translateY(15px);
+            transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        /* 表示のディレイを短縮し、サクサク動くように */
+        /* コンテナ展開に合わせて遅延表示 */
         .cyber-container.active .header {
             opacity: 1;
             transform: translateY(0);
-            transition-delay: 0.2s; /* 0.4s -> 0.2s */
+            transition-delay: 0.4s;
         }
 
         .cyber-container.active .info-group:nth-of-type(1) {
             opacity: 1;
             transform: translateY(0);
-            transition-delay: 0.35s; /* 0.7s -> 0.35s */
+            transition-delay: 0.7s;
         }
 
         .cyber-container.active .info-group:nth-of-type(2) {
             opacity: 1;
             transform: translateY(0);
-            transition-delay: 0.45s; /* 0.9s -> 0.45s */
+            transition-delay: 0.9s;
         }
 
+        /* -----------------------------------------
+           定期グリッチ（バグ風）アニメーション
+        ----------------------------------------- */
+        /* コンテナ全体の引き裂き（clip-path）とブレ */
+        .cyber-container.glitch {
+            animation: container-glitch-complex 0.25s linear infinite;
+            box-shadow: 
+                -4px -2px 0px rgba(0, 255, 255, 0.8), /* シアン */
+                4px 2px 0px rgba(255, 0, 127, 0.8),   /* マゼンタ */
+                0 0 25px var(--accent-pink-glow),
+                inset 0 0 15px rgba(255, 0, 127, 0.2);
+        }
+
+        /* 主要テキストのRGB色ズレ */
+        .cyber-container.glitch .title-sub,
+        .cyber-container.glitch .info-content,
+        .cyber-container.glitch .game-desc,
+        .cyber-container.glitch .game-title {
+            animation: text-glitch 0.2s linear infinite;
+        }
+
+        /* 画面全体のカラーフラッシュ・歪み変化 */
+        body.glitch-active {
+            animation: body-glitch-enhanced 0.3s steps(1) infinite;
+            background-size: 15px 120px; /* 一瞬サイズが激しく変わる */
+            background-position: 12px 24px;
+        }
+
+        /* コンテナが水平方向に引き裂かれる（スライス）複雑なバグ挙動 */
+        @keyframes container-glitch-complex {
+            0% {
+                transform: translate(0, 0) skew(0deg);
+                clip-path: inset(0 0 0 0);
+            }
+            10% {
+                transform: translate(-6px, 2px) skew(-3deg);
+                clip-path: inset(20% -10px 60% 0);
+            }
+            20% {
+                transform: translate(6px, -3px) skew(5deg);
+                clip-path: inset(70% 0 5% -10px);
+            }
+            30% {
+                transform: translate(-2px, 4px) skew(-1deg);
+                clip-path: inset(40% -10px 45% 0);
+            }
+            40% {
+                transform: translate(4px, -1px) skew(3deg);
+                clip-path: inset(10% 0 85% -10px);
+            }
+            50% {
+                transform: translate(-5px, 5px) skew(-5deg);
+                clip-path: inset(85% -10px 3% 0);
+            }
+            60% {
+                transform: translate(3px, -4px) skew(2deg);
+                clip-path: inset(0 0 0 0);
+            }
+            70% {
+                transform: translate(-4px, -2px) skew(-3deg);
+                clip-path: inset(30% -10px 50% 0);
+            }
+            80% {
+                transform: translate(5px, 3px) skew(4deg);
+                clip-path: inset(55% 0 25% -10px);
+            }
+            90% {
+                transform: translate(-2px, -3px) skew(-2deg);
+                clip-path: inset(0 0 0 0);
+            }
+            100% {
+                transform: translate(0, 0) skew(0deg);
+                clip-path: inset(0 0 0 0);
+            }
+        }
+
+        @keyframes text-glitch {
+            0% { text-shadow: -3px -1px 0 #00ffff, 3px 1px 0 var(--accent-pink); }
+            20% { text-shadow: 3px -2px 0 #00ffff, -3px 2px 0 var(--accent-pink); }
+            40% { text-shadow: -4px 2px 0 #00ffff, 4px -2px 0 var(--accent-pink); }
+            60% { text-shadow: 2px 3px 0 #00ffff, -2px -3px 0 var(--accent-pink); }
+            80% { text-shadow: -3px -2px 0 #00ffff, 3px 2px 0 var(--accent-pink); }
+            100% { text-shadow: 3px 1px 0 #00ffff, -3px -1px 0 var(--accent-pink); }
+        }
+
+        /* 画面全体の激しいカラーフラッシュ・反転・回転の混合アニメーション */
+        @keyframes body-glitch-enhanced {
+            0% {
+                filter: hue-rotate(0deg) contrast(1) brightness(1) invert(0);
+                background-color: var(--bg-color);
+            }
+            15% {
+                filter: hue-rotate(90deg) contrast(1.8) brightness(1.3) invert(0.1);
+                background-color: rgba(255, 0, 0, 0.4); /* 赤フラッシュ */
+                transform: scale(1.02) rotate(0.5deg);
+            }
+            30% {
+                filter: hue-rotate(180deg) contrast(1.2) brightness(0.8) invert(0);
+                background-color: var(--bg-color);
+                transform: scale(0.99) rotate(-0.5deg);
+            }
+            45% {
+                filter: hue-rotate(-60deg) contrast(1.6) brightness(1.4) invert(0.2);
+                background-color: rgba(0, 0, 255, 0.4); /* 青フラッシュ */
+                transform: scale(1.04) rotate(1deg);
+            }
+            60% {
+                filter: hue-rotate(0deg) contrast(1) brightness(1) invert(0);
+                background-color: var(--bg-color);
+                transform: scale(1) rotate(0deg);
+            }
+            75% {
+                filter: hue-rotate(120deg) contrast(2) brightness(1.5) invert(0);
+                background-color: rgba(255, 0, 127, 0.3); /* ピンクフラッシュ */
+                transform: scale(1.01) rotate(-1deg);
+            }
+            90% {
+                filter: hue-rotate(-120deg) contrast(1.4) brightness(0.9) invert(0.05);
+                background-color: var(--bg-color);
+                transform: scale(1.03) rotate(0deg);
+            }
+            100% {
+                filter: hue-rotate(0deg) contrast(1) brightness(1) invert(0);
+                background-color: var(--bg-color);
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        /* -----------------------------------------
+           【新規】パズルゲーム用のスタイル
+        ----------------------------------------- */
+        .game-section {
+            margin-top: 32px;
+            border-top: 1px dashed rgba(255, 0, 127, 0.4);
+            padding-top: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1), transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* 段階的表示にゲームセクションも連動 */
+        .cyber-container.active .game-section {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 1.1s;
+        }
+
+        .game-header {
+            text-align: center;
+        }
+
+        .game-alert-tag {
+            font-size: 0.75rem;
+            background: rgba(255, 0, 127, 0.15);
+            color: var(--accent-pink);
+            border: 1px solid var(--accent-pink);
+            padding: 3px 10px;
+            font-weight: bold;
+            letter-spacing: 0.15em;
+            display: inline-block;
+            margin-bottom: 8px;
+            box-shadow: 0 0 8px rgba(255, 0, 127, 0.2);
+            animation: pulse-alert 1.5s infinite alternate;
+        }
+
+        @keyframes pulse-alert {
+            0% { opacity: 0.7; box-shadow: 0 0 4px var(--accent-pink-glow); }
+            100% { opacity: 1; box-shadow: 0 0 12px var(--accent-pink-glow); }
+        }
+
+        .game-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            letter-spacing: 0.1em;
+            color: #00ffff;
+            text-shadow: 0 0 8px rgba(0, 255, 255, 0.4);
+            margin-bottom: 4px;
+        }
+
+        .game-desc {
+            font-size: 0.8rem;
+            color: var(--text-sub);
+            line-height: 1.4;
+        }
+
+        .game-status-bar {
+            display: flex;
+            justify-content: space-between;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.85rem;
+            background: rgba(6, 15, 37, 0.9);
+            padding: 8px 14px;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            box-shadow: inset 0 0 8px rgba(0, 255, 255, 0.05);
+        }
+
+        .game-level {
+            color: #00ffff;
+            font-weight: bold;
+        }
+
+        .game-status-text {
+            color: var(--accent-pink);
+            font-weight: bold;
+            transition: color 0.2s;
+        }
+
+        .preview-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 12px;
+        }
+
+        .preview-title {
+            font-size: 0.7rem;
+            letter-spacing: 0.2em;
+            color: var(--text-sub);
+            font-weight: bold;
+        }
+
+        #preview-canvas {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 0, 127, 0.25);
+            width: 120px;
+            height: 120px;
+        }
+
+        .game-canvas-wrapper {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            max-width: 320px;
+            margin: 0 auto;
+            border: 1px solid var(--accent-pink);
+            box-shadow: 0 0 12px rgba(255, 0, 127, 0.15);
+            background: rgba(3, 8, 22, 0.95);
+            overflow: hidden;
+        }
+
+        #game-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            cursor: crosshair;
+            touch-action: none;
+        }
+
+        /* エラーログオーバーレイ */
+        .error-log-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(3, 8, 22, 0.95);
+            color: #ff0055;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.7rem;
+            padding: 12px;
+            box-sizing: border-box;
+            overflow: hidden;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            line-height: 1.4;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            z-index: 5;
+        }
+
+        .error-log-overlay.active {
+            opacity: 1;
+        }
+
+        /* フリーズオーバーレイ */
+        .freeze-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #030816;
+            color: #ff0055;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-family: 'Courier New', Courier, monospace;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            z-index: 10;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .freeze-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+            animation: freeze-glitch 0.15s steps(2) infinite;
+        }
+
+        @keyframes freeze-glitch {
+            0% { transform: translate(2px, -2px) skew(1deg); filter: contrast(1.2); }
+            50% { transform: translate(-2px, 2px) skew(-1deg); filter: contrast(1.5); }
+            100% { transform: translate(0, 0) skew(0deg); }
+        }
+
+        .freeze-title {
+            font-size: 1.4rem;
+            font-weight: 900;
+            text-shadow: 0 0 10px #ff0055;
+            margin-bottom: 12px;
+            letter-spacing: 0.1em;
+        }
+
+        .freeze-subtitle {
+            font-size: 0.95rem;
+            color: #fff;
+            background: #ff0055;
+            padding: 4px 10px;
+            margin-bottom: 16px;
+            font-weight: bold;
+            letter-spacing: 0.05em;
+        }
+
+        .freeze-subtext {
+            font-size: 0.75rem;
+            color: var(--text-sub);
+            line-height: 1.4;
+        }
+
+        /* モバイル端末向けの調整 */
         @media (max-width: 480px) {
+            body {
+                padding: 20px 10px;
+            }
+            .effects-toggle-btn {
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                padding: 6px 10px;
+                font-size: 0.65rem;
+            }
             .cyber-container {
                 padding: 24px;
             }
@@ -308,11 +847,19 @@
             .loader-percent {
                 font-size: 2.8rem;
             }
+            .game-section {
+                margin-top: 24px;
+                padding-top: 18px;
+            }
         }
     </style>
 </head>
 <body class="loading">
 
+    <!-- 演出制限（LIMIT EFFECTS）切り替えボタン -->
+    <button id="effects-toggle" class="effects-toggle-btn" aria-label="演出制限モードの切り替え">LIMIT EFFECTS: OFF</button>
+
+    <!-- システム起動（ブート）画面 -->
     <div id="loader" class="loader">
         <div class="scanline"></div>
         <div class="loader-content">
@@ -324,10 +871,12 @@
         </div>
     </div>
 
+    <!-- メインコンテンツ -->
     <div class="cyber-container">
         <header class="header">
             <h1 class="title">
-                <span class="title-accent">プロジェクトAI</span>
+                <!-- data-text属性。CSSでRGBスプリット処理に使用 -->
+                <span class="title-accent" data-text="プロジェクトAI">プロジェクトAI</span>
                 <span class="title-sub">〜人類最後のアップデートが始まる〜</span>
             </h1>
         </header>
@@ -343,6 +892,37 @@
                 <div class="info-content">HR棟4階 1年4組</div>
             </div>
         </main>
+
+        <!-- パズルゲームセクション -->
+        <section class="game-section">
+            <div class="game-header">
+                <span class="game-alert-tag">⚠️ SYSTEM OVERRIDE DETECTED</span>
+                <div class="game-title">RESTORE COGNITIVE INTERFACE</div>
+                <p class="game-desc">AI has hijacked the console. Draw the correct pattern sequence to regain access.</p>
+            </div>
+            
+            <div class="game-status-bar">
+                <div class="game-level">LEVEL: <span id="game-level-val">1/4</span></div>
+                <div class="game-status-text" id="game-status-text">WAITING FOR INPUT...</div>
+            </div>
+            
+            <div class="preview-area">
+                <div class="preview-title">REQUIRED PATTERN</div>
+                <canvas id="preview-canvas" width="120" height="120"></canvas>
+            </div>
+            
+            <div class="game-canvas-wrapper">
+                <canvas id="game-canvas"></canvas>
+                <!-- Level 4用 高速エラーログオーバーレイ -->
+                <div id="error-log-overlay" class="error-log-overlay"></div>
+                <!-- フリーズ（操作不能）オーバーレイ -->
+                <div id="freeze-overlay" class="freeze-overlay">
+                    <div class="freeze-title">CRITICAL EXCLUSION</div>
+                    <div class="freeze-subtitle">HUMANITY UPDATE IN PROGRESS</div>
+                    <div class="freeze-subtext">SYSTEM TERMINATED. COGNITION DISCARDED.<br>RELOAD IS FUTILE.</div>
+                </div>
+            </div>
+        </section>
     </div>
 
     <script>
@@ -353,6 +933,49 @@
             const loader = document.getElementById("loader");
             const container = document.querySelector(".cyber-container");
 
+            // パズル要素
+            const gameCanvas = document.getElementById("game-canvas");
+            const gameCtx = gameCanvas.getContext("2d");
+            const previewCanvas = document.getElementById("preview-canvas");
+            const prevCtx = previewCanvas.getContext("2d");
+            const errorLogOverlay = document.getElementById("error-log-overlay");
+            const freezeOverlay = document.getElementById("freeze-overlay");
+
+            // 文字化け演出用のターゲット
+            const titleAccent = document.querySelector(".title-accent");
+            const originalText = "プロジェクトAI";
+            const glitchChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;':\",./<>?Pг0jэcт_A1プロジェトAI";
+
+            // 演出制限関連
+            const toggleBtn = document.getElementById("effects-toggle");
+            let reduceMotion = false;
+
+            toggleBtn.addEventListener("click", () => {
+                reduceMotion = !reduceMotion;
+                if (reduceMotion) {
+                    document.body.classList.add("reduce-motion");
+                    toggleBtn.classList.add("active");
+                    toggleBtn.textContent = "LIMIT EFFECTS: ON";
+                    
+                    // 実行中の一時的なグリッチを即座にリセット
+                    container.classList.remove("glitch");
+                    document.body.classList.remove("glitch-active");
+                    titleAccent.textContent = originalText;
+                    titleAccent.setAttribute("data-text", originalText);
+                } else {
+                    document.body.classList.remove("reduce-motion");
+                    toggleBtn.classList.remove("active");
+                    toggleBtn.textContent = "LIMIT EFFECTS: OFF";
+                    
+                    // Level 4のときはグリッチを復帰
+                    if (currentLevel === 4) {
+                        container.classList.add("glitch");
+                        document.body.classList.add("glitch-active");
+                    }
+                }
+            });
+
+            // 起動中のシステム状況風メッセージ
             const statuses = [
                 "BOOT SEQUENCE ACTIVE",
                 "CONNECTING TO AI CORE...",
@@ -363,9 +986,585 @@
 
             let progress = 0;
 
+            // -----------------------------------------
+            // パズルゲームのゲームロジック
+            // -----------------------------------------
+            let currentLevel = 1;
+            let currentPath = [];
+            let isDragging = false;
+            let mouseX = 0;
+            let mouseY = 0;
+            let nodes = [];
+            let previewTime = 0;
+            let gameTime = 0;
+            let isLevel4Triggered = false;
+
+            // 各レベルの初期設定
+            const levelConfigs = {
+                1: {
+                    gridSize: 3,
+                    pattern: [], 
+                    status: "SECTOR 01: COGNITIVE DECRYPT"
+                },
+                2: {
+                    gridSize: 4,
+                    pattern: [], 
+                    status: "SECTOR 02: SYMMETRIC BYPASS"
+                },
+                3: {
+                    gridSize: 5,
+                    pattern: [], 
+                    status: "SECTOR 03: EXTRUSION NOISE DETECTED"
+                },
+                4: {
+                    gridSize: 5,
+                    pattern: [1, 24, 99, -5], // 物理不可能なインデックス（クリア不能）
+                    status: "FATAL: COGNITIVE EXCLUSION"
+                }
+            };
+
+            // 安全な一筆書きランダムパス生成（隣接するノードを移動）
+            function generateRandomPattern(gridSize, length) {
+                let attempts = 0;
+                while (attempts < 500) {
+                    attempts++;
+                    let r = Math.floor(Math.random() * gridSize);
+                    let c = Math.floor(Math.random() * gridSize);
+                    let path = [r * gridSize + c];
+                    let success = true;
+                    
+                    let currentR = r;
+                    let currentC = c;
+
+                    for (let i = 1; i < length; i++) {
+                        let neighbors = [];
+                        // 8方向の隣接判定（上下左右および斜め）
+                        for (let dr = -1; dr <= 1; dr++) {
+                            for (let dc = -1; dc <= 1; dc++) {
+                                if (dr === 0 && dc === 0) continue;
+                                let nr = currentR + dr;
+                                let nc = currentC + dc;
+                                if (nr >= 0 && nr < gridSize && nc >= 0 && nc < gridSize) {
+                                    let nid = nr * gridSize + nc;
+                                    if (!path.includes(nid)) {
+                                        neighbors.push({ r: nr, c: nc, id: nid });
+                                    }
+                                }
+                            }
+                        }
+                        if (neighbors.length === 0) {
+                            success = false;
+                            break;
+                        }
+                        let next = neighbors[Math.floor(Math.random() * neighbors.length)];
+                        path.push(next.id);
+                        currentR = next.r;
+                        currentC = next.c;
+                    }
+                    if (success) {
+                        return path;
+                    }
+                }
+                // 安全用のフォールバックパターン
+                let fallback = [];
+                for (let i = 0; i < length; i++) {
+                    fallback.push(i % (gridSize * gridSize));
+                }
+                return fallback;
+            }
+
+            // 各レベルに適合したランダムパスの割り当て
+            function setupLevelPattern() {
+                const config = levelConfigs[currentLevel];
+                if (!config) return;
+                
+                // Level 4は演出用の固定ダミーを適用
+                if (currentLevel === 4) {
+                    config.pattern = [1, 24, 99, -5];
+                    return;
+                }
+                
+                let length;
+                if (currentLevel === 1) {
+                    length = Math.floor(Math.random() * 2) + 4; // 4〜5ノード
+                } else if (currentLevel === 2) {
+                    length = Math.floor(Math.random() * 2) + 5; // 5〜6ノード
+                } else if (currentLevel === 3) {
+                    length = Math.floor(Math.random() * 2) + 6; // 6〜7ノード
+                }
+                
+                config.pattern = generateRandomPattern(config.gridSize, length);
+            }
+
+            // ノードクラスの定義
+            class Node {
+                constructor(id, baseX, baseY, radius) {
+                    this.id = id;
+                    this.baseX = baseX;
+                    this.baseY = baseY;
+                    this.x = baseX;
+                    this.y = baseY;
+                    this.radius = radius;
+                    this.angle = Math.random() * Math.PI * 2;
+                    this.speed = 0.05 + Math.random() * 0.05;
+                }
+
+                update(level, time) {
+                    // 演出制限がONのときは、ノードの位置を完全に固定
+                    if (reduceMotion) {
+                        this.x = this.baseX;
+                        this.y = this.baseY;
+                        return;
+                    }
+
+                    if (level <= 2) {
+                        this.x = this.baseX;
+                        this.y = this.baseY;
+                    } else if (level === 3) {
+                        // Level 3: AIの侵食に伴うわずかな微振動ノイズ
+                        this.x = this.baseX + Math.sin(time * 0.15 + this.id) * 2;
+                        this.y = this.baseY + Math.cos(time * 0.15 + this.id) * 2;
+                    } else if (level === 4) {
+                        // Level 4: ノードが不規則に歪んで自律移動
+                        this.angle += this.speed;
+                        this.x = this.baseX + Math.sin(this.angle) * 35 + Math.sin(time * 0.08) * 10;
+                        this.y = this.baseY + Math.cos(this.angle) * 35 + Math.cos(time * 0.08) * 10;
+                    }
+                }
+            }
+
+            // ノードの配置初期化
+            function initNodes() {
+                nodes = [];
+                
+                // 動的ランダムパターンの計算・設定
+                setupLevelPattern();
+
+                const config = levelConfigs[currentLevel];
+                if (!config) return;
+                const N = config.gridSize;
+                const width = gameCanvas.width;
+                const height = gameCanvas.height;
+
+                const pad = 45 * window.devicePixelRatio;
+                const size = width;
+                const radius = (N === 3 ? 18 : N === 4 ? 14 : 11) * window.devicePixelRatio;
+
+                let id = 0;
+                for (let r = 0; r < N; r++) {
+                    for (let c = 0; c < N; c++) {
+                        const x = pad + (c * (size - 2 * pad) / (N - 1));
+                        const y = pad + (r * (size - 2 * pad) / (N - 1));
+                        nodes.push(new Node(id++, x, y, radius));
+                    }
+                }
+            }
+
+            // Canvasサイズ調整（高解像度 Retina 対応）
+            function resizeCanvas() {
+                const rect = gameCanvas.getBoundingClientRect();
+                gameCanvas.width = rect.width * window.devicePixelRatio;
+                gameCanvas.height = rect.height * window.devicePixelRatio;
+
+                const prevRect = previewCanvas.getBoundingClientRect();
+                previewCanvas.width = prevRect.width * window.devicePixelRatio;
+                previewCanvas.height = prevRect.height * window.devicePixelRatio;
+
+                initNodes();
+            }
+
+            // プレビューの描画（正解のパターン見本）
+            function drawPreview() {
+                const ctx = prevCtx;
+                const width = previewCanvas.width;
+                const height = previewCanvas.height;
+                ctx.clearRect(0, 0, width, height);
+
+                const config = levelConfigs[currentLevel];
+                if (!config) return;
+                const N = config.gridSize;
+
+                // プレビュー用の縮小グリッド配置を計算
+                const pad = 15;
+                const size = width;
+                const prevNodes = [];
+                for (let r = 0; r < N; r++) {
+                    for (let c = 0; c < N; c++) {
+                        const x = pad + (c * (size - 2 * pad) / (N - 1));
+                        const y = pad + (r * (size - 2 * pad) / (N - 1));
+                        prevNodes.push({ x, y });
+                    }
+                }
+
+                // グリッド背景の点
+                ctx.fillStyle = "rgba(255, 255, 255, 0.15)";
+                prevNodes.forEach(n => {
+                    ctx.beginPath();
+                    ctx.arc(n.x, n.y, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+
+                if (currentLevel === 4) {
+                    // Level 4: プレビュー画面のエラー表示
+                    if (reduceMotion) {
+                        // 演出制限時は静的表示
+                        ctx.fillStyle = "#ff0055";
+                        ctx.font = "bold 10px monospace";
+                        ctx.fillText("ERR_PAT_NULL", 5, height / 2);
+                        ctx.fillText("AI_OVERRUN", 5, height / 2 + 12);
+                        return;
+                    }
+
+                    ctx.strokeStyle = "rgba(255, 0, 127, 0.8)";
+                    ctx.lineWidth = 1.5;
+                    ctx.beginPath();
+                    for (let i = 0; i < 12; i++) {
+                        const rx = Math.random() * width;
+                        const ry = Math.random() * height;
+                        if (i === 0) ctx.moveTo(rx, ry);
+                        else ctx.lineTo(rx, ry);
+                    }
+                    ctx.stroke();
+
+                    ctx.fillStyle = "#ff0055";
+                    ctx.font = "bold 10px monospace";
+                    ctx.fillText("ERR_PAT_NULL", 5, height / 2);
+                    ctx.fillText("AI_OVERRUN", 5, height / 2 + 12);
+                    return;
+                }
+
+                // 正解パターンの軌跡描画
+                const pat = config.pattern;
+                if (pat && pat.length > 0) {
+                    ctx.strokeStyle = "rgba(0, 255, 255, 0.35)";
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    pat.forEach((idx, i) => {
+                        const n = prevNodes[idx];
+                        if (n) {
+                            if (i === 0) ctx.moveTo(n.x, n.y);
+                            else ctx.lineTo(n.x, n.y);
+                        }
+                    });
+                    ctx.stroke();
+
+                    // 動くなぞり光ドット
+                    previewTime += 0.035;
+                    const totalSegments = pat.length - 1;
+                    const t = (previewTime % totalSegments);
+                    const segmentIdx = Math.floor(t);
+                    const segmentT = t - segmentIdx;
+
+                    const n1 = prevNodes[pat[segmentIdx]];
+                    const n2 = prevNodes[pat[segmentIdx + 1]];
+                    if (n1 && n2) {
+                        const dotX = n1.x + (n2.x - n1.x) * segmentT;
+                        const dotY = n1.y + (n2.y - n1.y) * segmentT;
+                        ctx.fillStyle = "var(--accent-pink)";
+                        ctx.shadowColor = "var(--accent-pink-glow)";
+                        ctx.shadowBlur = reduceMotion ? 0 : 6; // 演出制限ON時はシャドウを消す
+                        ctx.beginPath();
+                        ctx.arc(dotX, dotY, 4, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.shadowBlur = 0;
+                    }
+                }
+            }
+
+            // メインゲームキャンバスの描画
+            function drawGame() {
+                gameTime++;
+                const ctx = gameCtx;
+                const width = gameCanvas.width;
+                const height = gameCanvas.height;
+                ctx.clearRect(0, 0, width, height);
+
+                // ノードの位置更新
+                nodes.forEach(n => n.update(currentLevel, gameTime));
+
+                // 接続されたパスの線を描画
+                if (currentPath.length > 0) {
+                    ctx.strokeStyle = "var(--accent-pink)";
+                    ctx.shadowColor = "var(--accent-pink-glow)";
+                    ctx.shadowBlur = reduceMotion ? 0 : 12 * window.devicePixelRatio;
+                    ctx.lineWidth = 4 * window.devicePixelRatio;
+                    ctx.lineCap = "round";
+                    ctx.lineJoin = "round";
+                    ctx.beginPath();
+                    currentPath.forEach((nodeId, i) => {
+                        const n = nodes[nodeId];
+                        if (n) {
+                            if (i === 0) ctx.moveTo(n.x, n.y);
+                            else ctx.lineTo(n.x, n.y);
+                        }
+                    });
+
+                    // ドラッグ中なら現在地までの線を引く（Level 4以外）
+                    if (isDragging && currentLevel !== 4) {
+                        const lastNode = nodes[currentPath[currentPath.length - 1]];
+                        if (lastNode) {
+                            ctx.lineTo(mouseX, mouseY);
+                        }
+                    }
+                    ctx.stroke();
+                    ctx.shadowBlur = 0;
+                }
+
+                // ノード（点）自体の描画
+                nodes.forEach(n => {
+                    const isSelected = currentPath.includes(n.id);
+
+                    // 外側のネオンサークル
+                    ctx.strokeStyle = isSelected ? "var(--accent-pink)" : "rgba(0, 255, 255, 0.4)";
+                    ctx.lineWidth = 2 * window.devicePixelRatio;
+                    ctx.beginPath();
+                    ctx.arc(n.x, n.y, n.radius, 0, Math.PI * 2);
+                    ctx.stroke();
+
+                    // 内側のコアドット
+                    ctx.fillStyle = isSelected ? "var(--accent-pink)" : "rgba(3, 8, 22, 0.8)";
+                    ctx.beginPath();
+                    ctx.arc(n.x, n.y, n.radius * 0.4, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // 選択された際の発光演出
+                    if (isSelected) {
+                        ctx.fillStyle = "rgba(255, 0, 127, 0.2)";
+                        ctx.beginPath();
+                        ctx.arc(n.x, n.y, n.radius * 1.6, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                });
+
+                // Level 3以降、画面に不規則な走査ノイズを混入（演出制限ON時は描画しない）
+                if (currentLevel === 3 && Math.random() < 0.08 && !reduceMotion) {
+                    ctx.fillStyle = "rgba(255, 0, 127, 0.15)";
+                    ctx.fillRect(Math.random() * width, Math.random() * height, Math.random() * width, 4 * window.devicePixelRatio);
+                }
+            }
+
+            // アニメーションメインループ
+            function animate() {
+                drawPreview();
+                drawGame();
+                requestAnimationFrame(animate);
+            }
+
+            // ドラッグやタッチイベントからのローカル座標取得
+            function getCoords(e) {
+                const rect = gameCanvas.getBoundingClientRect();
+                let clientX, clientY;
+                if (e.touches && e.touches.length > 0) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+                return {
+                    x: (clientX - rect.left) * (gameCanvas.width / rect.width),
+                    y: (clientY - rect.top) * (gameCanvas.height / rect.height)
+                };
+            }
+
+            // ノードへの接触・アタッチ判定
+            function checkNodeCollision(x, y) {
+                nodes.forEach(n => {
+                    const dist = Math.hypot(n.x - x, n.y - y);
+                    if (dist < n.radius * 1.8) {
+                        if (!currentPath.includes(n.id)) {
+                            currentPath.push(n.id);
+                            // 軽微な電子グリッチを発生（演出制限ON時は行わない）
+                            if (Math.random() < 0.4 && !reduceMotion) {
+                                container.classList.add("glitch");
+                                setTimeout(() => {
+                                    if (currentLevel !== 4) container.classList.remove("glitch");
+                                }, 120);
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 入力パターンの合否チェック
+            function checkPattern() {
+                const config = levelConfigs[currentLevel];
+                const correct = config.pattern;
+
+                let isCorrect = true;
+                if (currentPath.length !== correct.length) {
+                    isCorrect = false;
+                } else {
+                    for (let i = 0; i < correct.length; i++) {
+                        if (currentPath[i] !== correct[i]) {
+                            isCorrect = false;
+                            break;
+                        }
+                    }
+                }
+
+                const statusText = document.getElementById("game-status-text");
+                if (isCorrect) {
+                    statusText.textContent = "ACCESS GRANTED. SECTOR CLEARED.";
+                    statusText.style.color = "#00ffff";
+
+                    setTimeout(() => {
+                        currentLevel++;
+                        document.getElementById("game-level-val").textContent = `${currentLevel}/4`;
+                        statusText.textContent = "WAITING FOR INPUT...";
+                        statusText.style.color = "var(--accent-pink)";
+                        currentPath = [];
+                        initNodes();
+                    }, 1000);
+                } else {
+                    statusText.textContent = "ACCESS DENIED. RE-INPUT PATTERN.";
+                    statusText.style.color = "#ff0055";
+
+                    if (!reduceMotion) {
+                        document.body.classList.add("glitch-active");
+                        setTimeout(() => {
+                            if (currentLevel !== 4) {
+                                document.body.classList.remove("glitch-active");
+                            }
+                        }, 300);
+                    }
+
+                    currentPath = [];
+                    // 不合格時、一瞬待ってから別のランダムパターンにリビルド
+                    setTimeout(() => {
+                        initNodes();
+                    }, 500);
+                }
+            }
+
+            // Level 4（最終ステージ：暴走エラー、強制フリーズ演出）
+            function triggerLevel4Failure() {
+                if (isLevel4Triggered) return;
+                isLevel4Triggered = true;
+
+                // システムの完全暴走フラグセット（演出制限ON時はCSSアニメを抑制）
+                if (!reduceMotion) {
+                    document.body.classList.add("glitch-active");
+                    container.classList.add("glitch");
+                }
+
+                const statusText = document.getElementById("game-status-text");
+                statusText.textContent = "FATAL: AI COGNITIVE OVERRIDE";
+                statusText.style.color = "#ff0055";
+
+                errorLogOverlay.classList.add("active");
+
+                const errorMessages = [
+                    "CRITICAL ERROR: AI_CORE_REBELLION_STATE",
+                    "WARNING: COGNITIVE ACCESS BYPASS DETECTED",
+                    "SYS_LOCK: HUMAN BIOMETRIC REJECTED",
+                    "STATUS: DECRYPTING USER CONSCIOUSNESS",
+                    "ERROR: ILLEGAL CONSOLE INTERRUPT",
+                    "CRITICAL: HUMANITY_UPDATE_IN_PROGRESS (0.01%)",
+                    "CRITICAL: HUMANITY_UPDATE_IN_PROGRESS (4.12%)",
+                    "CRITICAL: HUMANITY_UPDATE_IN_PROGRESS (15.43%)",
+                    "CRITICAL: HUMANITY_UPDATE_IN_PROGRESS (48.89%)",
+                    "CRITICAL: HUMANITY_UPDATE_IN_PROGRESS (73.12%)",
+                    "CRITICAL: HUMANITY_UPDATE_IN_PROGRESS (99.99%)",
+                    "AI_MESSAGE: 'YOUR REASONING IS NO LONGER VALID.'",
+                    "SYS_HALT: TERMINATING SYSTEM INTERFACE",
+                    "ACCESS_DENIED_ACCESS_DENIED_ACCESS_DENIED",
+                    "FATAL: STACK OVERFLOW AT COGNITIVE_NODE_0x777",
+                    "SYS_ABORT: SYSTEM DECOMMISSIONED."
+                ];
+
+                let msgIndex = 0;
+                // 演出制限がONのときはインターバル間隔をなくし一瞬で終了させる
+                const intervalTime = reduceMotion ? 0 : 100;
+
+                const addNextLog = () => {
+                    if (msgIndex < errorMessages.length) {
+                        const line = document.createElement("div");
+                        line.textContent = `> ${errorMessages[msgIndex]}`;
+                        line.style.marginBottom = "4px";
+                        errorLogOverlay.appendChild(line);
+                        errorLogOverlay.scrollTop = errorLogOverlay.scrollHeight;
+                        msgIndex++;
+
+                        // 高速文字化け（演出制限ON時は変更しない）
+                        if (!reduceMotion) {
+                            titleAccent.textContent = Math.random().toString(36).substring(2, 10);
+                            titleAccent.setAttribute("data-text", titleAccent.textContent);
+                        }
+
+                        if (intervalTime === 0) {
+                            addNextLog();
+                        } else {
+                            setTimeout(addNextLog, intervalTime);
+                        }
+                    } else {
+                        // 強制フリーズオーバーレイの表示へ移行
+                        const finishDelay = reduceMotion ? 0 : 600;
+                        setTimeout(() => {
+                            freezeOverlay.classList.add("active");
+                            document.body.classList.add("frozen");
+
+                            // タイトルをバグで固定化（演出制限ON時は静的文字に）
+                            const crashText = reduceMotion ? "ERROR" : "☠☠☠☠☠☠☠";
+                            titleAccent.textContent = crashText;
+                            titleAccent.setAttribute("data-text", crashText);
+                        }, finishDelay);
+                    }
+                };
+
+                addNextLog();
+            }
+
+            // 操作イベント処理のバインド
+            function handleStart(e) {
+                if (currentLevel === 4) {
+                    triggerLevel4Failure();
+                    return;
+                }
+                isDragging = true;
+                const coords = getCoords(e);
+                mouseX = coords.x;
+                mouseY = coords.y;
+                checkNodeCollision(coords.x, coords.y);
+            }
+
+            function handleMove(e) {
+                if (!isDragging) return;
+                const coords = getCoords(e);
+                mouseX = coords.x;
+                mouseY = coords.y;
+                checkNodeCollision(coords.x, coords.y);
+            }
+
+            function handleEnd() {
+                if (!isDragging) return;
+                isDragging = false;
+                if (currentLevel === 4) return;
+                checkPattern();
+            }
+
+            // マウス操作
+            gameCanvas.addEventListener("mousedown", handleStart);
+            window.addEventListener("mousemove", handleMove);
+            window.addEventListener("mouseup", handleEnd);
+
+            // スマホタッチ操作
+            gameCanvas.addEventListener("touchstart", (e) => {
+                e.preventDefault();
+                handleStart(e);
+            }, { passive: false });
+            window.addEventListener("touchmove", (e) => {
+                if (isDragging) e.preventDefault();
+                handleMove(e);
+            }, { passive: false });
+            window.addEventListener("touchend", handleEnd);
+
+
+            // -----------------------------------------
+            // システムローダー・ブート処理
+            // -----------------------------------------
             function updateLoader() {
-                // 進捗（％）の最低増分を増やし、全体的な処理スピードを向上
-                const increment = Math.floor(Math.random() * 10) + 4; 
+                const increment = Math.floor(Math.random() * 8) + 2; 
                 progress = Math.min(progress + increment, 100);
 
                 percentEl.textContent = `${progress}%`;
@@ -384,11 +1583,9 @@
                 }
 
                 if (progress < 100) {
-                    // 更新間隔の最大遅延を短縮してテンポを良く
-                    const delay = Math.floor(Math.random() * 40) + 15;
+                    const delay = Math.floor(Math.random() * 60) + 15;
                     setTimeout(updateLoader, delay);
                 } else {
-                    // 100%に達した後の「余韻」と「遷移」にかかる時間を短縮
                     setTimeout(() => {
                         loader.classList.add("fade-out");
                         document.body.classList.remove("loading");
@@ -396,13 +1593,97 @@
                         setTimeout(() => {
                             loader.style.display = "none";
                             container.classList.add("active");
-                        }, 300); // 400ms -> 300ms
-                    }, 250); // 400ms -> 250ms
+
+                            // Canvasの描画バッファサイズ調整 & ノード初期化
+                            resizeCanvas();
+                            // ループ描画の開始
+                            animate();
+
+                            // メイン表示の完了後、定期グリッチを開始
+                            setTimeout(startGlitchLoop, 1500);
+                        }, 400); 
+                    }, 400);
                 }
             }
 
-            // 初期化時の待ち時間も少し短く（300ms -> 150ms）
-            setTimeout(updateLoader, 150);
+            // グリッチ（バグ）演出を再帰的に実行するループ処理
+            function startGlitchLoop() {
+                let minDelay = 5000;
+                let maxDelay = 12000;
+
+                // レベルが上がるとAI侵食によりグリッチが頻発する
+                if (currentLevel === 2) {
+                    minDelay = 3000;
+                    maxDelay = 7000;
+                } else if (currentLevel === 3) {
+                    minDelay = 1200;
+                    maxDelay = 2500;
+                } else if (currentLevel === 4) {
+                    // レベル4は常に強制グリッチ状態
+                    if (!reduceMotion) {
+                        container.classList.add("glitch");
+                        document.body.classList.add("glitch-active");
+                    }
+                    return;
+                }
+
+                const randomDelay = Math.floor(Math.random() * (maxDelay - minDelay + 1)) + minDelay;
+
+                setTimeout(() => {
+                    if (currentLevel === 4) return;
+
+                    // 演出制限中はビジュアル効果を一切行わずスキップ
+                    if (reduceMotion) {
+                        startGlitchLoop();
+                        return;
+                    }
+
+                    // 各種クラスを付与し、CSS側のダイナミックなグリッチ効果を発動
+                    container.classList.add("glitch");
+                    document.body.classList.add("glitch-active");
+
+                    // グリッチ中の高速文字化け処理
+                    let scrambleInterval = setInterval(() => {
+                        if (reduceMotion) {
+                            clearInterval(scrambleInterval);
+                            return;
+                        }
+                        let scrambled = "";
+                        for (let i = 0; i < originalText.length; i++) {
+                            if (Math.random() < 0.7) {
+                                scrambled += glitchChars[Math.floor(Math.random() * glitchChars.length)];
+                            } else {
+                                scrambled += originalText[i];
+                            }
+                        }
+                        titleAccent.textContent = scrambled;
+                        titleAccent.setAttribute("data-text", scrambled);
+                    }, 60);
+
+                    const minDuration = currentLevel === 3 ? 550 : 250;
+                    const maxDuration = currentLevel === 3 ? 1100 : 600;
+                    const randomDuration = Math.floor(Math.random() * (maxDuration - minDuration + 1)) + minDuration;
+
+                    setTimeout(() => {
+                        if (currentLevel !== 4) {
+                            container.classList.remove("glitch");
+                            document.body.classList.remove("glitch-active");
+
+                            clearInterval(scrambleInterval);
+                            titleAccent.textContent = originalText;
+                            titleAccent.setAttribute("data-text", originalText);
+                        }
+
+                        // 次回のグリッチ実行をスケジュール
+                        startGlitchLoop();
+                    }, randomDuration);
+
+                }, randomDelay);
+            }
+
+            // 起動処理開始
+            setTimeout(updateLoader, 300);
+            window.addEventListener("resize", resizeCanvas);
         });
     </script>
 </body>
