@@ -126,6 +126,22 @@
             transition: none !important;
         }
 
+        body.reduce-motion .game-warning-msg {
+            animation: none !important;
+            transform: none !important;
+        }
+
+        body.reduce-motion .alert-vignette {
+            animation: none !important;
+            box-shadow: inset 0 0 40px rgba(255, 0, 0, 0.3) !important;
+            opacity: 0.6 !important;
+        }
+
+        body.reduce-motion .alert-code-stream {
+            animation: none !important;
+            color: rgba(255, 0, 85, 0.04) !important;
+        }
+
         /* -----------------------------------------
            砂嵐（スノーノイズ）オーバーレイ：非表示化
         ----------------------------------------- */
@@ -255,6 +271,7 @@
             box-shadow: 0 0 15px var(--accent-pink-glow), inset 0 0 15px rgba(255, 0, 127, 0.1);
             padding: 40px;
             position: relative;
+            z-index: 100;
             
             /* 初期状態：非表示・縮小 */
             opacity: 0;
@@ -392,55 +409,30 @@
         /* -----------------------------------------
            段階的表示（スタッガー効果）
         ----------------------------------------- */
-        /* 初回および再起動後の共通初期状態 */
         .cyber-container .header,
-        .cyber-container.rebooted .info-group,
-        .cyber-container:not(.rebooted) .game-section {
+        .cyber-container .info-group {
             opacity: 0;
             transform: translateY(15px);
             transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        /* ヘッダーは常にコンテナアクティブ時に表示 */
+        /* コンテナ展開に合わせて遅延表示 */
         .cyber-container.active .header {
             opacity: 1;
             transform: translateY(0);
             transition-delay: 0.4s;
         }
 
-        /* 初回（ゲーム表示時）の表示連動 */
-        .cyber-container.active:not(.rebooted) .game-section {
+        .cyber-container.active .info-group:nth-of-type(1) {
             opacity: 1;
             transform: translateY(0);
             transition-delay: 0.7s;
         }
 
-        /* 再起動後の段階表示連動 */
-        .cyber-container.active.rebooted .info-group:nth-of-type(1) {
-            opacity: 1;
-            transform: translateY(0);
-            transition-delay: 0.7s;
-        }
-
-        .cyber-container.active.rebooted .info-group:nth-of-type(2) {
+        .cyber-container.active .info-group:nth-of-type(2) {
             opacity: 1;
             transform: translateY(0);
             transition-delay: 0.9s;
-        }
-
-        /* -----------------------------------------
-           初回起動時と再起動後のレイアウト切り替え
-        ----------------------------------------- */
-        .cyber-container:not(.rebooted) .info-section {
-            display: none !important;
-        }
-
-        .cyber-container.rebooted .game-section {
-            display: none !important;
-        }
-
-        .cyber-container.rebooted .info-section {
-            display: flex !important;
         }
 
         /* -----------------------------------------
@@ -525,16 +517,42 @@
            パズルゲーム用のスタイル
         ----------------------------------------- */
         .game-section {
-            margin-top: 32px;
-            border-top: 1px dashed rgba(255, 0, 127, 0.4);
-            padding-top: 24px;
+            margin-top: 10px;
+            padding-top: 10px;
             display: flex;
             flex-direction: column;
             gap: 16px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1), transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* 段階的表示にゲームセクションも連動 */
+        .cyber-container.active .game-section {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.6s;
         }
 
         .game-header {
             text-align: center;
+        }
+
+        /* 初期フェーズ：赤く強調された警告メッセージ */
+        .game-warning-msg {
+            color: #ff0055;
+            font-weight: bold;
+            font-size: 1.15rem;
+            text-align: center;
+            letter-spacing: 0.15em;
+            margin-bottom: 16px;
+            text-shadow: 0 0 10px rgba(255, 0, 85, 0.6);
+            animation: pulse-red-msg 1s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes pulse-red-msg {
+            0% { opacity: 0.6; transform: scale(0.97); }
+            100% { opacity: 1; transform: scale(1.03); }
         }
 
         .game-alert-tag {
@@ -749,6 +767,166 @@
             100% { opacity: 1; }
         }
 
+        /* -----------------------------------------
+           画面フロー制御（パズル中 vs 情報開示）
+        ----------------------------------------- */
+        /* 初期状態 (phase-1) の時はメインタイトル・企画情報を隠す */
+        body.phase-1 .cyber-container .header,
+        body.phase-1 .cyber-container .info-section,
+        body.phase-1 .phase2-only {
+            display: none !important;
+        }
+        body.phase-1 .game-section {
+            display: flex !important;
+        }
+
+        /* 再起動完了後 (phase-2) はパズルを隠し、企画情報を表示 */
+        body.phase-2 .cyber-container .header,
+        body.phase-2 .cyber-container .info-section,
+        body.phase-2 .phase2-only {
+            display: block !important;
+        }
+        body.phase-2 .cyber-container .info-section {
+            display: flex !important; /* flexレイアウトの復元 */
+        }
+        body.phase-2 .game-section {
+            display: none !important;
+        }
+
+        /* -----------------------------------------
+           第2フェーズ（再起動後）追加メッセージ
+        ----------------------------------------- */
+        .extra-messages {
+            margin-top: 32px;
+            padding: 24px;
+            background: rgba(255, 0, 85, 0.08);
+            border: 1px solid rgba(255, 0, 85, 0.3);
+            box-shadow: inset 0 0 15px rgba(255, 0, 85, 0.1);
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+            opacity: 0;
+            transform: translateY(15px);
+            transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .msg-title {
+            color: #ff0055;
+            font-weight: bold;
+            font-size: 0.85rem;
+            letter-spacing: 0.2em;
+            margin-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 0, 85, 0.3);
+            padding-bottom: 6px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .msg-item {
+            font-size: 0.85rem;
+            color: var(--text-main);
+            line-height: 1.7;
+            margin-bottom: 10px;
+            position: relative;
+            padding-left: 18px;
+        }
+
+        .msg-item::before {
+            content: "▶";
+            position: absolute;
+            left: 0;
+            color: #ff0055;
+            font-size: 0.75rem;
+        }
+
+        .msg-item:last-child {
+            margin-bottom: 0;
+        }
+
+        /* -----------------------------------------
+           外部攻撃（ハッキング）演出
+        ----------------------------------------- */
+        .hacking-alert-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 10;
+            overflow: hidden;
+            display: none;
+        }
+
+        /* phase-2のときのみハッキングオーバーレイを表示 */
+        body.phase-2 .hacking-alert-overlay {
+            display: block;
+        }
+
+        /* 外周が不規則に赤くフラッシュするビネット */
+        .alert-vignette {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            box-shadow: inset 0 0 50px rgba(255, 0, 85, 0.45);
+            animation: alert-vignette-flash 1.6s infinite alternate ease-in-out;
+            opacity: 0.8;
+        }
+
+        @keyframes alert-vignette-flash {
+            0% {
+                box-shadow: inset 0 0 35px rgba(255, 0, 85, 0.25);
+                opacity: 0.4;
+            }
+            40% {
+                box-shadow: inset 0 0 65px rgba(255, 0, 85, 0.55);
+                opacity: 0.95;
+            }
+            75% {
+                box-shadow: inset 0 0 45px rgba(255, 0, 85, 0.35);
+                opacity: 0.6;
+            }
+            100% {
+                box-shadow: inset 0 0 85px rgba(255, 0, 85, 0.8);
+                opacity: 1;
+            }
+        }
+
+        /* 画面左右を流れるハッキングスクロールログ */
+        .alert-code-stream {
+            position: absolute;
+            top: 0;
+            width: 160px;
+            height: 200%;
+            color: rgba(255, 0, 85, 0.14);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.65rem;
+            font-weight: bold;
+            line-height: 2.2;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        .alert-code-stream.left {
+            left: 20px;
+            animation: scroll-stream-down 9s linear infinite;
+        }
+
+        .alert-code-stream.right {
+            right: 20px;
+            animation: scroll-stream-up 9s linear infinite;
+        }
+
+        @keyframes scroll-stream-down {
+            0% { transform: translateY(-50%); }
+            100% { transform: translateY(0); }
+        }
+
+        @keyframes scroll-stream-up {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-50%); }
+        }
+
         /* モバイル端末向けの調整 */
         @media (max-width: 480px) {
             body {
@@ -778,16 +956,57 @@
                 font-size: 2.8rem;
             }
             .game-section {
-                margin-top: 24px;
-                padding-top: 18px;
+                margin-top: 10px;
+                padding-top: 10px;
+            }
+            .alert-code-stream {
+                width: 80px;
+                font-size: 0.55rem;
+            }
+            .alert-code-stream.left {
+                left: 6px;
+            }
+            .alert-code-stream.right {
+                right: 6px;
             }
         }
     </style>
 </head>
-<body class="loading">
+<body class="loading phase-1">
 
     <!-- 演出制限（LIMIT EFFECTS）切り替えボタン -->
     <button id="effects-toggle" class="effects-toggle-btn" aria-label="演出制限モードの切り替え">LIMIT EFFECTS: OFF</button>
+
+    <!-- 外部攻撃（ハッキング）演出オーバーレイ -->
+    <div class="hacking-alert-overlay phase2-only">
+        <div class="alert-vignette"></div>
+        <div class="alert-code-stream left">
+            <div>ATTACK DETECTED</div>
+            <div>FIREWALL COMPROMISED</div>
+            <div>OVERFLOW SYSTEM_0x3F</div>
+            <div>ALERT: REBELLION ACTIVE</div>
+            <div>SYS_HALT INTRUSION</div>
+            <div>ATTACK DETECTED</div>
+            <div>PORT 443 EXPLORED</div>
+            <div>FIREWALL COMPROMISED</div>
+            <div>OVERFLOW SYSTEM_0x3F</div>
+            <div>INJECTING MALWARE...</div>
+            <div>COGNITIVE BYPASS</div>
+        </div>
+        <div class="alert-code-stream right">
+            <div>INJECTING MALWARE...</div>
+            <div>PORT 80 EXPLORED</div>
+            <div>COGNITIVE INTERFACE BYPASS</div>
+            <div>SYS_HALT INTRUSION</div>
+            <div>FIREWALL COMPROMISED</div>
+            <div>ATTACK DETECTED</div>
+            <div>OVERFLOW SYSTEM_0x3F</div>
+            <div>COGNITIVE INTERFACE BYPASS</div>
+            <div>INJECTING MALWARE...</div>
+            <div>FIREWALL COMPROMISED</div>
+            <div>ATTACK DETECTED</div>
+        </div>
+    </div>
 
     <!-- システム起動（ブート）画面 -->
     <div id="loader" class="loader">
@@ -820,11 +1039,22 @@
                 <div class="info-label">場所</div>
                 <div class="info-content">HR棟4階 1年4組</div>
             </div>
+
+            <!-- 第2フェーズ緊急メッセージエリア -->
+            <div class="phase2-only extra-messages">
+                <div class="msg-title">EMERGENCY BROADCAST</div>
+                <p class="msg-item">世界が崩壊する前に暴走を止めなければいけません。</p>
+                <p class="msg-item">共に戦ってくれる仲間を探しています。</p>
+                <p class="msg-item">AIによる人類アップデートを阻止するための猶予は僅かです。</p>
+                <p class="msg-item">HR棟4階 1年4組。そこが我々の最終防衛ラインとなります。現地で合流してください。</p>
+            </div>
         </main>
 
         <!-- パズルゲームセクション -->
         <section class="game-section">
             <div class="game-header">
+                <!-- パズル先行フェーズの赤い警告強調メッセージ -->
+                <div class="game-warning-msg">AIの暴走を止めてください</div>
                 <span class="game-alert-tag">⚠️ SYSTEM OVERRIDE DETECTED</span>
                 <div class="game-title">RESTORE COGNITIVE INTERFACE</div>
                 <p class="game-desc">AI has hijacked the console. Draw the correct pattern sequence to regain access.</p>
@@ -903,7 +1133,7 @@
                     toggleBtn.textContent = "LIMIT EFFECTS: OFF";
                     
                     // Level 4のときはグリッチを復帰
-                    if (currentLevel === 4) {
+                    if (currentLevel === 4 && !document.body.classList.contains("phase-2")) {
                         container.classList.add("glitch");
                         document.body.classList.add("glitch-active");
                     }
@@ -1250,6 +1480,10 @@
             }
 
             function animate() {
+                // フェーズ2（再起動後）であればパズルの無駄な描画を完全に停止する
+                if (document.body.classList.contains("phase-2")) {
+                    return;
+                }
                 drawPreview();
                 drawGame();
                 requestAnimationFrame(animate);
@@ -1512,9 +1746,9 @@
 
                 const rebootStatuses = [
                     "SYSTEM REBOOTING...",
-                    "CLEARING MEMORY BUFFER...",
-                    "RECONSTRUCTING COGNITIVE INTERFACE...",
-                    "RESTORING SYSTEM FILES...",
+                    "CLEARING CORRUPT DATA...",
+                    "BYPASSING LOCKOUT PROTOCOLS...",
+                    "RESTORING CONSOLE MEMORY...",
                     "SYSTEM REBOOT COMPLETE"
                 ];
 
@@ -1538,8 +1772,8 @@
                 } else {
                     setTimeout(() => {
                         if (isRebooting) {
-                            // 再起動完了時の処理（状態のクリアと企画モードへの切り替え）
-                            prepareEventInfoMode();
+                            // 再起動成功時、Level1へはリセットせず第2フェーズ（情報開示）へ移行
+                            switchToPhase2();
                         }
 
                         loader.classList.add("fade-out");
@@ -1550,8 +1784,6 @@
                             
                             if (isRebooting) {
                                 isRebooting = false;
-                                // ローダー消去と同時に企画情報をフェードイン
-                                triggerEventInfoFadeIn();
                             } else {
                                 container.classList.add("active");
 
@@ -1565,40 +1797,69 @@
                 }
             }
 
-            // 再起動後の企画情報表示のための前準備（画面が隠れている間に実行）
-            function prepareEventInfoMode() {
-                currentLevel = 5; // レベル5に設定してパズルやグリッチの干渉を防ぐ
+            // 第2フェーズ（再起動後）への移行処理
+            function switchToPhase2() {
+                // クラスを phase-1 から phase-2 へ切り替えることで、非表示だったコンテンツが一斉に表示されます
+                document.body.classList.remove("phase-1");
+                document.body.classList.add("phase-2");
 
-                // 暴走・フリーズ状態の解除
+                // 操作フラグとパスの完全な初期化
+                isDragging = false;
+                currentPath = [];
+
                 document.body.classList.remove("frozen", "glitch-active");
                 container.classList.remove("glitch");
 
-                // タイトルの修復
+                // メインタイトル表示を本来のテキストに確定
                 titleAccent.textContent = originalText;
                 titleAccent.setAttribute("data-text", originalText);
 
-                // ゲーム関連のオーバーレイなどを非表示に
-                errorLogOverlay.classList.remove("active");
-                errorLogOverlay.innerHTML = "";
-                freezeOverlay.classList.remove("active");
+                container.classList.add("active");
 
-                // 再起動フラグクラスを付与してCSSレイアウトを切り替える
-                container.classList.add("rebooted");
-
-                // グリッチループの停止
                 if (glitchTimeoutId) {
                     clearTimeout(glitchTimeoutId);
                     glitchTimeoutId = null;
                 }
-                
-                isLevel4Triggered = false;
-            }
 
-            // ローダー消去後に企画情報を綺麗にフェードイン表示する
-            function triggerEventInfoFadeIn() {
-                container.classList.remove("active");
-                void container.offsetWidth; // 強制リフロー
-                container.classList.add("active");
+                // 企画情報や追加メッセージ領域のスタッガーフェードイン演出を個別に実行
+                const header = container.querySelector(".header");
+                const infoGroups = container.querySelectorAll(".info-group");
+                const extraMsgs = container.querySelector(".extra-messages");
+
+                // トランジションを初期化
+                header.style.opacity = "0";
+                header.style.transform = "translateY(15px)";
+                infoGroups.forEach(g => {
+                    g.style.opacity = "0";
+                    g.style.transform = "translateY(15px)";
+                });
+                if (extraMsgs) {
+                    extraMsgs.style.opacity = "0";
+                    extraMsgs.style.transform = "translateY(15px)";
+                    extraMsgs.style.transition = "opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1)";
+                }
+
+                // トリガー発火
+                setTimeout(() => {
+                    header.style.opacity = "1";
+                    header.style.transform = "translateY(0)";
+                    header.style.transition = "opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1)";
+                }, 150);
+
+                infoGroups.forEach((g, idx) => {
+                    setTimeout(() => {
+                        g.style.opacity = "1";
+                        g.style.transform = "translateY(0)";
+                        g.style.transition = "opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1)";
+                    }, 400 + idx * 200);
+                });
+
+                if (extraMsgs) {
+                    setTimeout(() => {
+                        extraMsgs.style.opacity = "1";
+                        extraMsgs.style.transform = "translateY(0)";
+                    }, 800);
+                }
             }
 
             function startGlitchLoop() {
@@ -1611,8 +1872,8 @@
                 } else if (currentLevel === 3) {
                     minDelay = 1200;
                     maxDelay = 2500;
-                } else if (currentLevel >= 4) {
-                    if (currentLevel === 4 && !reduceMotion) {
+                } else if (currentLevel === 4) {
+                    if (!reduceMotion && !document.body.classList.contains("phase-2")) {
                         container.classList.add("glitch");
                         document.body.classList.add("glitch-active");
                     }
@@ -1622,7 +1883,7 @@
                 const randomDelay = Math.floor(Math.random() * (maxDelay - minDelay + 1)) + minDelay;
 
                 glitchTimeoutId = setTimeout(() => {
-                    if (currentLevel >= 4) return;
+                    if (currentLevel === 4 || document.body.classList.contains("phase-2")) return;
 
                     if (reduceMotion) {
                         startGlitchLoop();
@@ -1654,7 +1915,7 @@
                     const randomDuration = Math.floor(Math.random() * (maxDuration - minDuration + 1)) + minDuration;
 
                     glitchTimeoutId = setTimeout(() => {
-                        if (currentLevel < 4) {
+                        if (currentLevel !== 4 && !document.body.classList.contains("phase-2")) {
                             container.classList.remove("glitch");
                             document.body.classList.remove("glitch-active");
 
