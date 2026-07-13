@@ -392,30 +392,55 @@
         /* -----------------------------------------
            段階的表示（スタッガー効果）
         ----------------------------------------- */
+        /* 初回および再起動後の共通初期状態 */
         .cyber-container .header,
-        .cyber-container .info-group {
+        .cyber-container.rebooted .info-group,
+        .cyber-container:not(.rebooted) .game-section {
             opacity: 0;
             transform: translateY(15px);
             transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        /* コンテナ展開に合わせて遅延表示 */
+        /* ヘッダーは常にコンテナアクティブ時に表示 */
         .cyber-container.active .header {
             opacity: 1;
             transform: translateY(0);
             transition-delay: 0.4s;
         }
 
-        .cyber-container.active .info-group:nth-of-type(1) {
+        /* 初回（ゲーム表示時）の表示連動 */
+        .cyber-container.active:not(.rebooted) .game-section {
             opacity: 1;
             transform: translateY(0);
             transition-delay: 0.7s;
         }
 
-        .cyber-container.active .info-group:nth-of-type(2) {
+        /* 再起動後の段階表示連動 */
+        .cyber-container.active.rebooted .info-group:nth-of-type(1) {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.7s;
+        }
+
+        .cyber-container.active.rebooted .info-group:nth-of-type(2) {
             opacity: 1;
             transform: translateY(0);
             transition-delay: 0.9s;
+        }
+
+        /* -----------------------------------------
+           初回起動時と再起動後のレイアウト切り替え
+        ----------------------------------------- */
+        .cyber-container:not(.rebooted) .info-section {
+            display: none !important;
+        }
+
+        .cyber-container.rebooted .game-section {
+            display: none !important;
+        }
+
+        .cyber-container.rebooted .info-section {
+            display: flex !important;
         }
 
         /* -----------------------------------------
@@ -506,16 +531,6 @@
             display: flex;
             flex-direction: column;
             gap: 16px;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1), transform 1s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        /* 段階的表示にゲームセクションも連動 */
-        .cyber-container.active .game-section {
-            opacity: 1;
-            transform: translateY(0);
-            transition-delay: 1.1s;
         }
 
         .game-header {
@@ -1523,7 +1538,8 @@
                 } else {
                     setTimeout(() => {
                         if (isRebooting) {
-                            resetSystemToLevel1();
+                            // 再起動完了時の処理（状態のクリアと企画モードへの切り替え）
+                            prepareEventInfoMode();
                         }
 
                         loader.classList.add("fade-out");
@@ -1534,6 +1550,8 @@
                             
                             if (isRebooting) {
                                 isRebooting = false;
+                                // ローダー消去と同時に企画情報をフェードイン
+                                triggerEventInfoFadeIn();
                             } else {
                                 container.classList.add("active");
 
@@ -1547,35 +1565,40 @@
                 }
             }
 
-            // システム状態の完全なリセット
-            function resetSystemToLevel1() {
-                currentLevel = 1;
-                document.getElementById("game-level-val").textContent = "1/4";
+            // 再起動後の企画情報表示のための前準備（画面が隠れている間に実行）
+            function prepareEventInfoMode() {
+                currentLevel = 5; // レベル5に設定してパズルやグリッチの干渉を防ぐ
 
-                const statusText = document.getElementById("game-status-text");
-                statusText.textContent = "WAITING FOR INPUT...";
-                statusText.style.color = "var(--accent-pink)";
-
+                // 暴走・フリーズ状態の解除
                 document.body.classList.remove("frozen", "glitch-active");
                 container.classList.remove("glitch");
 
+                // タイトルの修復
                 titleAccent.textContent = originalText;
                 titleAccent.setAttribute("data-text", originalText);
 
+                // ゲーム関連のオーバーレイなどを非表示に
                 errorLogOverlay.classList.remove("active");
                 errorLogOverlay.innerHTML = "";
                 freezeOverlay.classList.remove("active");
 
-                isLevel4Triggered = false;
+                // 再起動フラグクラスを付与してCSSレイアウトを切り替える
+                container.classList.add("rebooted");
 
-                currentPath = [];
-                initNodes();
-
+                // グリッチループの停止
                 if (glitchTimeoutId) {
                     clearTimeout(glitchTimeoutId);
                     glitchTimeoutId = null;
                 }
-                setTimeout(startGlitchLoop, 1500);
+                
+                isLevel4Triggered = false;
+            }
+
+            // ローダー消去後に企画情報を綺麗にフェードイン表示する
+            function triggerEventInfoFadeIn() {
+                container.classList.remove("active");
+                void container.offsetWidth; // 強制リフロー
+                container.classList.add("active");
             }
 
             function startGlitchLoop() {
@@ -1588,8 +1611,8 @@
                 } else if (currentLevel === 3) {
                     minDelay = 1200;
                     maxDelay = 2500;
-                } else if (currentLevel === 4) {
-                    if (!reduceMotion) {
+                } else if (currentLevel >= 4) {
+                    if (currentLevel === 4 && !reduceMotion) {
                         container.classList.add("glitch");
                         document.body.classList.add("glitch-active");
                     }
@@ -1599,7 +1622,7 @@
                 const randomDelay = Math.floor(Math.random() * (maxDelay - minDelay + 1)) + minDelay;
 
                 glitchTimeoutId = setTimeout(() => {
-                    if (currentLevel === 4) return;
+                    if (currentLevel >= 4) return;
 
                     if (reduceMotion) {
                         startGlitchLoop();
@@ -1631,7 +1654,7 @@
                     const randomDuration = Math.floor(Math.random() * (maxDuration - minDuration + 1)) + minDuration;
 
                     glitchTimeoutId = setTimeout(() => {
-                        if (currentLevel !== 4) {
+                        if (currentLevel < 4) {
                             container.classList.remove("glitch");
                             document.body.classList.remove("glitch-active");
 
