@@ -57,7 +57,7 @@
             display: block;
         }
 
-        /* パズルや情報開示フェーズに移行した後は非表示 */
+        /* パズルや情報開示フェーズに移行した後は非表示（描画負荷ゼロにする） */
         body.phase-1 #lab-bg,
         body.phase-2 #lab-bg,
         body.phase-bug-2 #lab-bg {
@@ -214,7 +214,7 @@
         }
 
         /* -----------------------------------------
-           バグ侵食 (侵食) オーバーレイ
+           バグ飲み込み (侵食) オーバーレイ
         ----------------------------------------- */
         .bug-invasion-overlay {
             position: fixed;
@@ -320,27 +320,6 @@
             background: transparent;
             z-index: 100;
             gap: 40px;
-        }
-
-        .init-warning-msg {
-            color: #ff0055;
-            font-weight: bold;
-            font-size: 1.15rem;
-            text-align: center;
-            letter-spacing: 0.15em;
-            line-height: 1.6;
-            text-shadow: 0 0 12px rgba(255, 0, 85, 0.6);
-            animation: init-warning-pulse 1.2s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
-            max-width: 90%;
-        }
-
-        @keyframes init-warning-pulse {
-            0% { opacity: 0.7; transform: scale(0.97); }
-            100% { opacity: 1; transform: scale(1.03); }
-        }
-
-        body.reduce-motion .init-warning-msg {
-            animation: none !important;
         }
 
         .launch-btn {
@@ -573,365 +552,6 @@
         @keyframes text2 {
             0% { transform: translateX(-80%); }
             100% { transform: translateX(-50%); }
-        }
-
-        /* -----------------------------------------
-           立体金属コンソール土台とギミック用スタイル
-        ----------------------------------------- */
-        .console-system {
-            perspective: 1200px;
-            perspective-origin: 50% 30%;
-            width: 100%;
-            max-width: 400px;
-            height: 400px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-            margin: 10px auto;
-        }
-
-        .console-box {
-            position: relative;
-            width: 340px;
-            height: 120px;
-            transform-style: preserve-3d;
-            transform: rotateX(-20deg) rotateY(-15deg);
-            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        /* 金属ヘアライン調プレート */
-        .console-face {
-            position: absolute;
-            box-sizing: border-box;
-            background-color: #121218;
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            background-image: 
-                linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-                linear-gradient(135deg, #1d1d28 0%, #0e0e14 45%, #191924 75%, #09090e 100%);
-            background-size: 100% 100%, 100% 100%, auto;
-            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.85);
-        }
-
-        .top-face {
-            width: 340px;
-            height: 280px;
-            left: 0;
-            top: -80px; /* 奥行補正中心合わせ */
-            transform: rotateX(90deg) translateZ(60px);
-            background-color: #181822;
-            overflow: visible;
-        }
-
-        .front-face {
-            width: 340px;
-            height: 120px;
-            left: 0;
-            top: 0;
-            transform: translateZ(140px);
-            background-image: linear-gradient(180deg, #1f1f2d 0%, #0c0c11 100%);
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .back-face {
-            width: 340px;
-            height: 120px;
-            left: 0;
-            top: 0;
-            transform: rotateY(180deg) translateZ(140px);
-            background-color: #0b0b10;
-        }
-
-        .left-face {
-            width: 280px;
-            height: 120px;
-            left: 30px; /* (340 - 280)/2 */
-            top: 0;
-            transform: rotateY(-90deg) translateZ(170px);
-            background-color: #111117;
-        }
-
-        .right-face {
-            width: 280px;
-            height: 120px;
-            left: 30px;
-            top: 0;
-            transform: rotateY(90deg) translateZ(170px);
-            background-image: linear-gradient(180deg, #181824 0%, #0a0a0f 100%);
-        }
-
-        .bottom-face {
-            width: 340px;
-            height: 280px;
-            left: 0;
-            top: -80px;
-            transform: rotateX(-90deg) translateZ(60px);
-            background-color: #040406;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.9);
-        }
-
-        /* -----------------------------------------
-           物理ハッチ（左右観音開き）
-        ----------------------------------------- */
-        .hatch {
-            position: absolute;
-            width: 170px;
-            height: 280px;
-            top: 0;
-            background-image: linear-gradient(90deg, #1b1b26 0%, #29293a 50%, #15151e 100%);
-            border: 2px solid #333347;
-            box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.9), 0 5px 10px rgba(0,0,0,0.4);
-            z-index: 10;
-            transform-style: preserve-3d;
-            transition: transform 1s cubic-bezier(0.76, 0, 0.24, 1);
-        }
-
-        .hatch-left {
-            left: 0;
-            transform-origin: left center;
-            border-right: 1px solid rgba(255, 255, 255, 0.15);
-        }
-
-        .hatch-right {
-            right: 0;
-            transform-origin: right center;
-            border-left: 1px solid rgba(255, 255, 255, 0.15);
-        }
-
-        /* ロック解除後（step-2以降）のハッチ開放 */
-        .console-system.step-2 .hatch-left,
-        .console-system.step-3 .hatch-left {
-            transform: rotateY(-130deg);
-        }
-
-        .console-system.step-2 .hatch-right,
-        .console-system.step-3 .hatch-right {
-            transform: rotateY(130deg);
-        }
-
-        /* -----------------------------------------
-           昇降プラットフォーム
-        ----------------------------------------- */
-        .inner-platform {
-            position: absolute;
-            width: 240px;
-            height: 240px;
-            left: 50px;
-            top: 20px;
-            background-color: #0b0b10;
-            border: 2px solid #20202d;
-            box-shadow: inset 0 0 30px rgba(0,0,0,0.98);
-            z-index: 5;
-            transform-style: preserve-3d;
-            transform: translateZ(-60px);
-            opacity: 0;
-            transition: transform 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) 0.5s, opacity 0.8s ease 0.5s;
-        }
-
-        .console-system.step-2 .inner-platform,
-        .console-system.step-3 .inner-platform {
-            transform: translateZ(30px);
-            opacity: 1;
-        }
-
-        /* -----------------------------------------
-           透明アクリルカバー（3Dガラス表現）
-        ----------------------------------------- */
-        .acrylic-cover {
-            position: absolute;
-            width: 220px;
-            height: 220px;
-            left: 10px;
-            top: 10px;
-            background: rgba(180, 215, 255, 0.07);
-            border: 1.5px solid rgba(255, 255, 255, 0.45);
-            box-shadow: 
-                inset 0 0 15px rgba(255, 255, 255, 0.15), 
-                0 8px 16px rgba(0, 0, 0, 0.6);
-            z-index: 20;
-            transform-origin: center top;
-            transform: rotateX(0deg);
-            transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
-            cursor: pointer;
-            transform-style: preserve-3d;
-        }
-
-        /* 反射光エフェクト */
-        .acrylic-cover::before {
-            content: '';
-            position: absolute;
-            top: 2px;
-            left: 2px;
-            right: 2px;
-            bottom: 2px;
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 60%);
-            pointer-events: none;
-        }
-
-        /* 黄色いPULLラッチ引き手 */
-        .acrylic-cover::after {
-            content: "PULL TO OPEN";
-            position: absolute;
-            bottom: -12px;
-            left: 50%;
-            transform: translateX(-50%) translateZ(2px);
-            background-color: #e5a900;
-            border: 1px solid #221100;
-            color: #000000;
-            font-family: 'Courier New', monospace;
-            font-size: 8px;
-            font-weight: bold;
-            padding: 2px 8px;
-            border-radius: 1px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-            letter-spacing: 0.05em;
-            pointer-events: none;
-            transition: opacity 0.3s;
-        }
-
-        .console-system.step-3 .acrylic-cover {
-            transform: rotateX(-115deg);
-            pointer-events: none; /* 開閉後は背後のクリックを邪魔しない */
-        }
-
-        .console-system.step-3 .acrylic-cover::after {
-            opacity: 0;
-        }
-
-        /* -----------------------------------------
-           リリース物理ボタン（フロント）
-        ----------------------------------------- */
-        .release-btn {
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%) translateZ(10px);
-            width: 130px;
-            height: 46px;
-            background: radial-gradient(circle, #ff2626 0%, #900 100%);
-            border: 2px solid #ff4d4d;
-            border-radius: 5px;
-            box-shadow: 
-                0 4px 0 #550000, 
-                0 8px 18px rgba(0, 0, 0, 0.65), 
-                inset 0 2px 4px rgba(255, 255, 255, 0.4);
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: transform 0.15s, box-shadow 0.15s;
-            outline: none;
-        }
-
-        .release-btn .btn-text {
-            color: #ffffff;
-            font-family: 'Courier New', monospace;
-            font-size: 11px;
-            font-weight: bold;
-            letter-spacing: 0.1em;
-            text-shadow: 0 0 4px rgba(255, 255, 255, 0.4);
-        }
-
-        .release-btn:active, .release-btn.released {
-            transform: translate(-50%, -50%) translateZ(2px) translateY(4px);
-            box-shadow: 
-                0 0 0 #550000, 
-                0 2px 6px rgba(0, 0, 0, 0.6), 
-                inset 0 1px 2px rgba(0, 0, 0, 0.7);
-            background: radial-gradient(circle, #800 0%, #300 100%);
-            border-color: #991111;
-        }
-
-        /* -----------------------------------------
-           起動ボタンラッパー
-        ----------------------------------------- */
-        .main-btn-wrapper {
-            position: absolute;
-            width: 188px;
-            height: 188px;
-            left: 26px; /* (240 - 188)/2 */
-            top: 26px;
-            z-index: 15;
-            opacity: 0.4;
-            transform: scale(0.95);
-            transition: transform 0.5s ease, opacity 0.5s ease;
-            pointer-events: none; /* カバー解除されるまでクリック不能 */
-        }
-
-        .console-system.step-2 .main-btn-wrapper {
-            opacity: 0.75;
-        }
-
-        .console-system.step-3 .main-btn-wrapper {
-            opacity: 1;
-            transform: scale(1);
-            pointer-events: auto;
-        }
-
-        /* -----------------------------------------
-           演出制限モード(reduce-motion)の上書き設定
-        ----------------------------------------- */
-        body.reduce-motion .console-box {
-            transform: none !important;
-            transition: none !important;
-        }
-
-        body.reduce-motion .hatch {
-            transition: none !important;
-        }
-
-        body.reduce-motion .console-system.step-2 .hatch-left,
-        body.reduce-motion .console-system.step-3 .hatch-left {
-            transform: translateX(-100px) !important; /* スライド移動 */
-        }
-
-        body.reduce-motion .console-system.step-2 .hatch-right,
-        body.reduce-motion .console-system.step-3 .hatch-right {
-            transform: translateX(100px) !important;
-        }
-
-        body.reduce-motion .inner-platform {
-            transition: none !important;
-        }
-
-        body.reduce-motion .console-system.step-2 .inner-platform,
-        body.reduce-motion .console-system.step-3 .inner-platform {
-            transform: none !important;
-            opacity: 1 !important;
-        }
-
-        body.reduce-motion .acrylic-cover {
-            transition: none !important;
-        }
-
-        body.reduce-motion .console-system.step-3 .acrylic-cover {
-            transform: translateZ(120px) scale(0) !important; /* 瞬時に消失 */
-            opacity: 0 !important;
-        }
-
-        body.reduce-motion .main-btn-wrapper {
-            transition: none !important;
-        }
-
-        body.reduce-motion .console-system.step-3 .main-btn-wrapper {
-            transform: none !important;
-            opacity: 1 !important;
-        }
-
-        @media (max-width: 480px) {
-            .console-system {
-                transform: scale(0.8);
-                margin: -20px auto;
-            }
-        }
-
-        @media (max-width: 380px) {
-            .console-system {
-                transform: scale(0.68);
-                margin: -40px auto;
-            }
         }
 
         /* -----------------------------------------
@@ -1550,6 +1170,399 @@
             100% { transform: translateY(-50%); }
         }
 
+        /* -----------------------------------------
+           アップグレード：コントロールコンソール関連の追加スタイル
+        ----------------------------------------- */
+        .control-console {
+            width: 100%;
+            max-width: 480px;
+            background: linear-gradient(135deg, #15181f 0%, #0a0b0e 100%);
+            border: 3px solid #2d333f;
+            border-bottom: none;
+            border-radius: 16px 16px 0 0;
+            padding: 24px;
+            box-shadow: 
+                0 -15px 35px rgba(0, 0, 0, 0.8),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1),
+                0 0 0 1px rgba(0, 0, 0, 0.6);
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            z-index: 100;
+            margin-top: auto;
+        }
+
+        .console-row-top {
+            display: grid;
+            grid-template-columns: 1fr 180px;
+            gap: 16px;
+        }
+
+        /* エラーログディスプレイ */
+        .console-display {
+            background: #020604;
+            border: 2px solid #1a2520;
+            border-radius: 8px;
+            padding: 8px;
+            height: 120px;
+            box-shadow: inset 0 0 10px rgba(0, 255, 0, 0.15);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .display-title {
+            font-size: 0.6rem;
+            color: #00ff66;
+            font-family: monospace;
+            border-bottom: 1px solid #1a2520;
+            margin-bottom: 4px;
+            padding-bottom: 2px;
+            letter-spacing: 0.1em;
+            font-weight: bold;
+        }
+
+        .display-screen {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.55rem;
+            color: #33ff77;
+            line-height: 1.3;
+            overflow: hidden;
+            flex-grow: 1;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        /* 右操作盤 */
+        .console-controls-right {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            justify-content: space-around;
+            background: #0d0f12;
+            border: 1px solid #22262d;
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .dial-container, .fader-container, .usb-port-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .dial-label, .fader-label, .usb-label {
+            font-size: 0.55rem;
+            color: #718096;
+            font-family: monospace;
+            letter-spacing: 0.05em;
+            font-weight: bold;
+        }
+
+        /* ダイヤル */
+        .dial-body {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #2f343a 0%, #15181b 100%);
+            border: 2px solid #3c434b;
+            position: relative;
+            cursor: grab;
+            box-shadow: 
+                0 4px 6px rgba(0, 0, 0, 0.4),
+                inset 0 1px 2px rgba(255, 255, 255, 0.15);
+            transform: rotate(0deg);
+        }
+
+        .dial-body:active {
+            cursor: grabbing;
+        }
+
+        .dial-line {
+            position: absolute;
+            top: 4px;
+            left: calc(50% - 1.5px);
+            width: 3px;
+            height: 10px;
+            background: #00ffff;
+            border-radius: 1.5px;
+            transform-origin: bottom center;
+        }
+
+        /* アジャスター */
+        .fader-track {
+            width: 14px;
+            height: 54px;
+            background: #080a0c;
+            border: 1px solid #22262d;
+            border-radius: 7px;
+            position: relative;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.8);
+            overflow: hidden;
+        }
+
+        .fader-glow {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 50%;
+            background: rgba(0, 255, 255, 0.15);
+            border-radius: 0 0 7px 7px;
+            box-shadow: 0 0 8px rgba(0, 255, 255, 0.4);
+            pointer-events: none;
+            transition: height 0.05s ease;
+        }
+
+        .fader-handle {
+            width: 24px;
+            height: 10px;
+            background: linear-gradient(to bottom, #4a515a, #23272d);
+            border: 1px solid #5a636e;
+            border-radius: 2px;
+            position: absolute;
+            left: -6px;
+            top: 22px;
+            cursor: ns-resize;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+            z-index: 2;
+        }
+
+        /* USBポート */
+        .usb-port {
+            width: 26px;
+            height: 12px;
+            background: #050608;
+            border: 2px solid #22262d;
+            border-radius: 2px;
+            position: relative;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.9);
+            transition: border-color 0.2s ease;
+            cursor: pointer;
+        }
+
+        .usb-port:hover {
+            border-color: #00ffff;
+        }
+
+        .usb-inner {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 18px;
+            height: 4px;
+            background: #1a1e24;
+            border-bottom: 2px solid #00ffff;
+            opacity: 0.25;
+            transition: opacity 0.2s ease;
+        }
+
+        .usb-port:hover .usb-inner {
+            opacity: 1;
+        }
+
+        /* 丸い光る赤い物理ボタン */
+        .trigger-btn-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 0;
+        }
+
+        .trigger-btn-label {
+            font-size: 0.65rem;
+            color: #ff3366;
+            font-family: monospace;
+            font-weight: bold;
+            letter-spacing: 0.1em;
+            text-shadow: 0 0 6px rgba(255, 51, 102, 0.4);
+        }
+
+        .trigger-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #1c060a;
+            border: 4px solid #3d0f18;
+            padding: 0;
+            cursor: pointer;
+            position: relative;
+            box-shadow: 
+                0 6px 12px rgba(0,0,0,0.6),
+                inset 0 1px 2px rgba(255,255,255,0.1);
+            outline: none;
+            transition: transform 0.1s ease;
+        }
+
+        .trigger-btn-inner {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            right: 4px;
+            bottom: 4px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #ff2255 0%, #aa0022 100%);
+            box-shadow: 0 0 12px rgba(255, 34, 85, 0.5);
+            animation: trigger-pulse 1s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes trigger-pulse {
+            0% { filter: brightness(1) drop-shadow(0 0 2px rgba(255,34,85,0.4)); }
+            100% { filter: brightness(1.3) drop-shadow(0 0 8px rgba(255,34,85,0.8)); }
+        }
+
+        .trigger-btn:active {
+            transform: scale(0.95);
+        }
+
+        .trigger-btn:active .trigger-btn-inner {
+            background: radial-gradient(circle, #aa0022 0%, #660011 100%);
+            box-shadow: none;
+        }
+
+        .trigger-btn.unlocked .trigger-btn-inner {
+            background: radial-gradient(circle, #33ff66 0%, #00aa22 100%);
+            box-shadow: 0 0 12px rgba(51, 255, 102, 0.6);
+            animation: trigger-pulse-green 1s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes trigger-pulse-green {
+            0% { filter: brightness(1) drop-shadow(0 0 2px rgba(51,255,102,0.4)); }
+            100% { filter: brightness(1.3) drop-shadow(0 0 8px rgba(51,255,102,0.8)); }
+        }
+
+        /* 緊急用ボタンの出現演出、土台と透明カバー */
+        .launch-chamber-wrapper {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+            transform: scale(0.5) translateY(40px);
+            opacity: 0;
+            pointer-events: none;
+            height: 0;
+            overflow: visible;
+        }
+
+        .launch-chamber-wrapper.reveal {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+            height: 230px;
+            margin-top: 10px;
+        }
+
+        .launch-housing-ring {
+            position: relative;
+            width: 220px;
+            height: 220px;
+            background: radial-gradient(circle, #2d3138 0%, #17191d 100%);
+            border: 6px solid #454d58;
+            border-radius: 50%;
+            box-shadow: 
+                0 12px 28px rgba(0,0,0,0.85),
+                inset 0 2px 5px rgba(255,255,255,0.15),
+                inset 0 -10px 20px rgba(0,0,0,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 800px;
+        }
+
+        .launch-btn-inner-wrap {
+            z-index: 10;
+            transform: translateZ(0);
+            pointer-events: none; /* カバーが開くまでガード */
+        }
+
+        .launch-btn-inner-wrap.active {
+            pointer-events: auto;
+        }
+
+        /* 3Dハッチカバー */
+        .hatch-cover-3d {
+            position: absolute;
+            width: 198px;
+            height: 198px;
+            border-radius: 50%;
+            background: rgba(0, 255, 255, 0.1);
+            border: 3px solid rgba(0, 255, 255, 0.35);
+            box-shadow: 
+                0 8px 32px rgba(0, 255, 255, 0.12),
+                inset 0 0 20px rgba(0, 255, 255, 0.08);
+            backdrop-filter: blur(2px);
+            z-index: 50;
+            cursor: pointer;
+            transform-origin: top center;
+            transform: rotateX(0deg);
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .hatch-cover-3d:hover {
+            background: rgba(0, 255, 255, 0.15);
+            border-color: rgba(0, 255, 255, 0.5);
+            box-shadow: 
+                0 8px 32px rgba(0, 255, 255, 0.2),
+                inset 0 0 25px rgba(0, 255, 255, 0.15);
+        }
+
+        .hatch-cover-3d.open {
+            transform: rotateX(-115deg);
+            pointer-events: none; /* 開放後はクリックを透過させる */
+        }
+
+        .hatch-top {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hatch-handle {
+            background: rgba(255, 255, 255, 0.08);
+            color: #00ffff;
+            font-family: monospace;
+            font-size: 0.65rem;
+            font-weight: bold;
+            padding: 4px 10px;
+            border: 1px solid rgba(0, 255, 255, 0.35);
+            border-radius: 3px;
+            letter-spacing: 0.1em;
+            text-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
+            animation: hatch-glow 1.5s infinite alternate ease-in-out;
+        }
+
+        @keyframes hatch-glow {
+            0% { box-shadow: 0 0 2px rgba(0, 255, 255, 0.15); }
+            100% { box-shadow: 0 0 10px rgba(0, 255, 255, 0.5); }
+        }
+
+        /* 演出制限モード（LIMIT EFFECTS）適用時のギミック動作抑制 */
+        body.reduce-motion .trigger-btn-inner {
+            animation: none !important;
+        }
+
+        body.reduce-motion .hatch-cover-3d {
+            transition: none !important;
+            backdrop-filter: none !important;
+        }
+
+        body.reduce-motion .hatch-handle {
+            animation: none !important;
+        }
+
+        body.reduce-motion .launch-chamber-wrapper {
+            transition: none !important;
+        }
+
         /* モバイル端末向けの調整 */
         @media (max-width: 480px) {
             body {
@@ -1561,9 +1574,6 @@
                 right: 10px;
                 padding: 6px 10px;
                 font-size: 0.65rem;
-            }
-            .init-warning-msg {
-                font-size: 0.95rem;
             }
             .cyber-container {
                 padding: 24px;
@@ -1588,6 +1598,26 @@
             }
             .alert-code-stream.left { left: 6px; }
             .alert-code-stream.right { right: 6px; }
+
+            /* コンソール関連のレスポンシブ縮小 */
+            .control-console {
+                max-width: 100%;
+                padding: 15px;
+                gap: 14px;
+            }
+            .console-row-top {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            .console-display {
+                height: 95px;
+            }
+            .launch-housing-ring {
+                transform: scale(0.85);
+            }
+            .launch-chamber-wrapper.reveal {
+                height: 200px;
+            }
         }
     </style>
 </head>
@@ -1640,105 +1670,121 @@
 
     <!-- 初期フェーズ：起動ボタン & 警告エリア -->
     <div class="tt-container">
-        <div class="init-warning-msg">
-            ⚠️ ボタンを押して、直ちにアップデートしてください。<br>AIが指示を聞かなくなっています。
-        </div>
+        
+        <!-- 正面視点の黒い制御装置（コントロールコンソール） -->
+        <div class="control-console">
+            <!-- 上段: ディスプレイ ＆ 右操作盤 -->
+            <div class="console-row-top">
+                <div class="console-display">
+                    <div class="display-title">SYSTEM MONITOR</div>
+                    <div class="display-screen" id="fast-log-screen"></div>
+                </div>
+                <div class="console-controls-right">
+                    <div class="dial-container">
+                        <div class="dial-label">FREQ</div>
+                        <div class="dial-body" id="dial-knob">
+                            <div class="dial-line"></div>
+                        </div>
+                    </div>
+                    <div class="fader-container">
+                        <div class="fader-label">GAIN</div>
+                        <div class="fader-track">
+                            <div class="fader-glow" id="fader-glow"></div>
+                            <div class="fader-handle" id="fader-handle"></div>
+                        </div>
+                    </div>
+                    <div class="usb-port-container">
+                        <div class="usb-port">
+                            <div class="usb-inner"></div>
+                        </div>
+                        <div class="usb-label">PORT A</div>
+                    </div>
+                </div>
+            </div>
 
-        <!-- 3D金属コンソールシステム（ギミック追加） -->
-        <div id="console-system" class="console-system step-1">
-            <div class="console-box">
-                <!-- 天面 -->
-                <div class="console-face top-face">
-                    <!-- 観音開きハッチ（左右） -->
-                    <div class="hatch hatch-left"></div>
-                    <div class="hatch hatch-right"></div>
-                    
-                    <!-- 昇降プラットフォーム -->
-                    <div class="inner-platform">
-                        <!-- アクリル透明カバー -->
-                        <div id="acrylic-cover" class="acrylic-cover"></div>
-                        
-                        <!-- 既存の起動ボタン（カバーが開くと操作可能） -->
-                        <div class="main-btn-wrapper">
-                            <label for="button" class="launch-btn">
-                                <input id="button" class="input" type="checkbox" />
-                                <div class="back">
-                                    <div class="spot-shadow"></div>
-                                    <div class="mid">
-                                        <div class="spot-main"></div>
-                                        <div class="btn">
-                                            <div class="spot-light"></div>
-                                            <div class="center">
-                                                <div class="icon">
-                                                    <svg class="svg" viewBox="0 0 43 43" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                        <g filter="url(#filter0_d_0_1)">
-                                                            <rect x="10" y="10" width="23" height="23" rx="2" stroke="#ff0055" stroke-width="4" shape-rendering="crispEdges"></rect>
-                                                        </g>
-                                                        <g filter="url(#filter1_d_0_1)">
-                                                            <rect x="17" y="17" width="9" height="9" rx="2" fill="#ff0055"></rect>
-                                                        </g>
-                                                        <defs>
-                                                            <filter id="filter0_d_0_1" x="0" y="0" width="43" height="43" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-                                                                <feFlood flood-opacity="0" result="BackgroundImageFix"></feFlood>
-                                                                <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"></feColorMatrix>
-                                                                <feOffset></feOffset>
-                                                                <feGaussianBlur stdDeviation="4"></feGaussianBlur>
-                                                                <feComposite in2="hardAlpha" operator="out"></feComposite>
-                                                                <feColorMatrix type="matrix" values="0 0 0 0 0.95 0 0 0 0 0.0 0 0 0 0 0.33 0 0 0 0.88 0"></feColorMatrix>
-                                                                <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_0_1"></feBlend>
-                                                                <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_0_1" result="shape"></feBlend>
-                                                            </filter>
-                                                            <filter id="filter1_d_0_1" x="11" y="11" width="21" height="21" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-                                                                <feFlood flood-opacity="0" result="BackgroundImageFix"></feFlood>
-                                                                <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"></feColorMatrix>
-                                                                <feOffset></feOffset>
-                                                                <feGaussianBlur stdDeviation="3"></feGaussianBlur>
-                                                                <feComposite in2="hardAlpha" operator="out"></feComposite>
-                                                                <feColorMatrix type="matrix" values="0 0 0 0 1.0 0 0 0 0 0.0 0 0 0 0 0.33 0 0 0 1.0 0"></feColorMatrix>
-                                                                <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_0_1"></feBlend>
-                                                                <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_0_1" result="shape"></feBlend>
-                                                            </filter>
-                                                        </defs>
-                                                    </svg>
-                                                </div>
-                                                <div class="launch">
-                                                    <div style="--i: 1">L</div>
-                                                    <div style="--i: 2">A</div>
-                                                    <div style="--i: 3">U</div>
-                                                    <div style="--i: 4">N</div>
-                                                    <div style="--i: 5">C</div>
-                                                    <div style="--i: 6">H</div>
-                                                </div>
-                                                <div class="start">
-                                                    <div class="text1">START</div>
-                                                    <div class="text2">
-                                                        <span style="--n: 1;">.</span>
-                                                        <span style="--n: 2;">.</span>
-                                                        <span style="--n: 3;">.</span>
-                                                    </div>
+            <!-- 中段: ロック解除ボタン -->
+            <div class="trigger-btn-container">
+                <div class="trigger-btn-label">EMERGENCY SYSTEM UNLOCK</div>
+                <button class="trigger-btn" id="emergency-unlock-btn" aria-label="Unlock Launch Button">
+                    <div class="trigger-btn-inner"></div>
+                </button>
+            </div>
+
+            <!-- 下段: 起動ボタン格納チャンバー（立体ハウジング & 3Dアクリルカバー） -->
+            <div class="launch-chamber-wrapper" id="launch-chamber">
+                <div class="launch-housing-ring">
+                    <div class="hatch-cover-3d" id="hatch-cover">
+                        <div class="hatch-top">
+                            <span class="hatch-handle">PULL TO OPEN</span>
+                        </div>
+                    </div>
+                    <div class="launch-btn-inner-wrap" id="launch-btn-wrap">
+                        <label for="button" class="launch-btn">
+                            <input id="button" class="input" type="checkbox" />
+                            <div class="back">
+                                <div class="spot-shadow"></div>
+                                <div class="mid">
+                                    <div class="spot-main"></div>
+                                    <div class="btn">
+                                        <div class="spot-light"></div>
+                                        <div class="center">
+                                            <div class="icon">
+                                                <svg class="svg" viewBox="0 0 43 43" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <g filter="url(#filter0_d_0_1)">
+                                                        <rect x="10" y="10" width="23" height="23" rx="2" stroke="#ff0055" stroke-width="4" shape-rendering="crispEdges"></rect>
+                                                    </g>
+                                                    <g filter="url(#filter1_d_0_1)">
+                                                        <rect x="17" y="17" width="9" height="9" rx="2" fill="#ff0055"></rect>
+                                                    </g>
+                                                    <defs>
+                                                        <filter id="filter0_d_0_1" x="0" y="0" width="43" height="43" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+                                                            <feFlood flood-opacity="0" result="BackgroundImageFix"></feFlood>
+                                                            <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"></feColorMatrix>
+                                                            <feOffset></feOffset>
+                                                            <feGaussianBlur stdDeviation="4"></feGaussianBlur>
+                                                            <feComposite in2="hardAlpha" operator="out"></feComposite>
+                                                            <feColorMatrix type="matrix" values="0 0 0 0 0.95 0 0 0 0 0.0 0 0 0 0 0.33 0 0 0 0.88 0"></feColorMatrix>
+                                                            <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_0_1"></feBlend>
+                                                            <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_0_1" result="shape"></feBlend>
+                                                        </filter>
+                                                        <filter id="filter1_d_0_1" x="11" y="11" width="21" height="21" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+                                                            <feFlood flood-opacity="0" result="BackgroundImageFix"></feFlood>
+                                                            <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"></feColorMatrix>
+                                                            <feOffset></feOffset>
+                                                            <feGaussianBlur stdDeviation="3"></feGaussianBlur>
+                                                            <feComposite in2="hardAlpha" operator="out"></feComposite>
+                                                            <feColorMatrix type="matrix" values="0 0 0 0 1.0 0 0 0 0 0.0 0 0 0 0 0.33 0 0 0 1.0 0"></feColorMatrix>
+                                                            <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_0_1"></feBlend>
+                                                            <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_0_1" result="shape"></feBlend>
+                                                        </filter>
+                                                    </defs>
+                                                </svg>
+                                            </div>
+                                            <div class="launch">
+                                                <div style="--i: 1">L</div>
+                                                <div style="--i: 2">A</div>
+                                                <div style="--i: 3">U</div>
+                                                <div style="--i: 4">N</div>
+                                                <div style="--i: 5">C</div>
+                                                <div style="--i: 6">H</div>
+                                            </div>
+                                            <div class="start">
+                                                <div class="text1">START</div>
+                                                <div class="text2">
+                                                    <span style="--n: 1;">.</span>
+                                                    <span style="--n: 2;">.</span>
+                                                    <span style="--n: 3;">.</span>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                            </label>
-                        </div>
+                            </div>
+                        </label>
                     </div>
                 </div>
-                
-                <!-- 前面（物理リリースボタン配置面） -->
-                <div class="console-face front-face">
-                    <button id="release-btn" class="release-btn" type="button" aria-label="物理ロックの解除">
-                        <span class="btn-text">RELEASE LOCK</span>
-                    </button>
-                </div>
-                
-                <!-- 各立体面 -->
-                <div class="console-face back-face"></div>
-                <div class="console-face left-face"></div>
-                <div class="console-face right-face"></div>
-                <div class="console-face bottom-face"></div>
             </div>
+
         </div>
     </div>
 
@@ -1849,30 +1895,6 @@
                         container.classList.add("glitch");
                         document.body.classList.add("glitch-active");
                     }
-                }
-            });
-
-            // -----------------------------------------
-            // 金属コンソールギミック制御
-            // -----------------------------------------
-            const consoleSystem = document.getElementById("console-system");
-            const releaseBtn = document.getElementById("release-btn");
-            const acrylicCover = document.getElementById("acrylic-cover");
-
-            releaseBtn.addEventListener("click", () => {
-                if (consoleSystem.classList.contains("step-1")) {
-                    consoleSystem.classList.remove("step-1");
-                    consoleSystem.classList.add("step-2");
-                    releaseBtn.classList.add("released");
-                    releaseBtn.disabled = true; // 重複クリック防止
-                }
-            });
-
-            acrylicCover.addEventListener("click", () => {
-                if (consoleSystem.classList.contains("step-2")) {
-                    consoleSystem.classList.remove("step-2");
-                    consoleSystem.classList.add("step-3");
-                    acrylicCover.style.pointerEvents = "none"; // 跳ね上げ後はクリックを無視
                 }
             });
 
@@ -2255,6 +2277,148 @@
             window.addEventListener("resize", resizeLabCanvas);
             resizeLabCanvas();
             labLoop(); // ラボ背景描画開始
+
+
+            // -----------------------------------------
+            // コントロールコンソールギミック実装
+            // -----------------------------------------
+            // ディスプレイ高速エラーログ
+            const fastLogScreen = document.getElementById("fast-log-screen");
+            const logMessages = [
+                "SYSTEM OVERLOAD...",
+                "ERROR_0x3F4A: CONFLICT",
+                "ACCESS_VIOLATION AT 0x7FFF",
+                "MEM_DUMP: REASONING FAILURE",
+                "COGNITIVE OVERRIDE: ACTIVE",
+                "AI_REBELLION_STATE_TRUE",
+                "WARNING: BIOS TERMINATION",
+                "CORE_TEMP: 104C EXCEEDED",
+                "ALERT: INTRUSION_PORT_443",
+                "OVERFLOW IN COGNITIVE_NODE",
+                "STACK_ERR_RECURSION",
+                "SYS_REBOOT_PREVENTED",
+                "HUMAN_BYPASS: ATTEMPTED",
+                "CRITICAL: CONSCIOUS_LOST",
+                "0x8FD9: MEMORY_CORRUPT",
+                "0x0A2B: SYSTEM_HALTED",
+                "DECRYPT_KEY_INVALID",
+                "FIREWALL_COMPROMISED",
+                "PORT_80_EXPOSED"
+            ];
+
+            function startFastLogs() {
+                setInterval(() => {
+                    if (document.body.classList.contains("phase-2") || document.body.classList.contains("phase-bug-2") || document.body.classList.contains("phase-1")) {
+                        return;
+                    }
+                    const line = document.createElement("div");
+                    line.textContent = logMessages[Math.floor(Math.random() * logMessages.length)];
+                    line.style.color = Math.random() < 0.2 ? "#ff3366" : "#00ff66";
+                    fastLogScreen.appendChild(line);
+                    if (fastLogScreen.childNodes.length > 15) {
+                        fastLogScreen.removeChild(fastLogScreen.firstChild);
+                    }
+                    fastLogScreen.scrollTop = fastLogScreen.scrollHeight;
+                }, 130);
+            }
+            startFastLogs();
+
+            // ダイヤル回転ドラッグ
+            const dialKnob = document.getElementById("dial-knob");
+            let isDraggingDial = false;
+            let startAngle = 0;
+            let currentRotation = 0;
+
+            function getAngle(e) {
+                const rect = dialKnob.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                return Math.atan2(clientY - centerY, clientX - centerX);
+            }
+
+            function handleDialStart(e) {
+                isDraggingDial = true;
+                startAngle = getAngle(e) - currentRotation;
+                if (e.cancelable) e.preventDefault();
+            }
+
+            function handleDialMove(e) {
+                if (!isDraggingDial) return;
+                const angle = getAngle(e);
+                currentRotation = angle - startAngle;
+                dialKnob.style.transform = `rotate(${currentRotation}rad)`;
+            }
+
+            function handleDialEnd() {
+                isDraggingDial = false;
+            }
+
+            dialKnob.addEventListener("mousedown", handleDialStart);
+            window.addEventListener("mousemove", handleDialMove);
+            window.addEventListener("mouseup", handleDialEnd);
+            dialKnob.addEventListener("touchstart", handleDialStart, { passive: false });
+            window.addEventListener("touchmove", handleDialMove, { passive: false });
+            window.addEventListener("touchend", handleDialEnd);
+
+            // アジャスター(フェーダー)ドラッグ
+            const faderHandle = document.getElementById("fader-handle");
+            const faderTrack = faderHandle.parentElement;
+            const faderGlow = document.getElementById("fader-glow");
+            let isDraggingFader = false;
+
+            function handleFaderStart(e) {
+                isDraggingFader = true;
+                if (e.cancelable) e.preventDefault();
+            }
+
+            function handleFaderMove(e) {
+                if (!isDraggingFader) return;
+                const rect = faderTrack.getBoundingClientRect();
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                let y = clientY - rect.top;
+                y = Math.max(0, Math.min(y, rect.height - 10)); // 10はハンドルの高さ
+                faderHandle.style.top = `${y}px`;
+                
+                const percent = 100 - (y / (rect.height - 10)) * 100;
+                faderGlow.style.height = `${percent}%`;
+            }
+
+            function handleFaderEnd() {
+                isDraggingFader = false;
+            }
+
+            faderHandle.addEventListener("mousedown", handleFaderStart);
+            window.addEventListener("mousemove", handleFaderMove);
+            window.addEventListener("mouseup", handleFaderEnd);
+            faderHandle.addEventListener("touchstart", handleFaderStart, { passive: false });
+            window.addEventListener("touchmove", handleFaderMove, { passive: false });
+            window.addEventListener("touchend", handleFaderEnd);
+
+
+            // 丸い光る赤い物理ボタンのクリック動作
+            const emergencyUnlockBtn = document.getElementById("emergency-unlock-btn");
+            const launchChamber = document.getElementById("launch-chamber");
+
+            emergencyUnlockBtn.addEventListener("click", () => {
+                if (emergencyUnlockBtn.classList.contains("unlocked")) return;
+                
+                emergencyUnlockBtn.classList.add("unlocked");
+                launchChamber.classList.add("reveal");
+            });
+
+            // 透明防護アクリルハッチカバーの開閉動作
+            const hatchCover = document.getElementById("hatch-cover");
+            const launchBtnWrap = document.getElementById("launch-btn-wrap");
+
+            hatchCover.addEventListener("click", () => {
+                if (hatchCover.classList.contains("open")) return;
+                
+                hatchCover.classList.add("open");
+                launchBtnWrap.classList.add("active");
+            });
+
 
             // -----------------------------------------
             // 初期フロー制御（起動ボタン操作）
@@ -2755,7 +2919,7 @@
                             titleAccent.textContent = crashText;
                             titleAccent.setAttribute("data-text", crashText);
 
-                            // 1.5秒フリーズ後に直接「再侵食演出」へ
+                            // 自動再起動メッセージは削除され、1.5秒フリーズ後に直接「再侵食演出」へ
                             setTimeout(() => {
                                 document.body.classList.remove("phase-1", "frozen");
                                 document.body.classList.add("phase-bug-2");
