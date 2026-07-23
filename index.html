@@ -1,220 +1,145 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>プロジェクトAI〜人類最後のアップデートが始まる〜</title>
-    <style>
-        :root {
-            --bg-color: #030816;
-            --panel-bg: rgba(6, 15, 37, 0.85);
-            --accent-pink: #ff007f;
-            --accent-pink-glow: rgba(255, 0, 127, 0.6);
-            --text-main: #ffffff;
-            --text-sub: #a0aec0;
-            --grid-color: rgba(0, 150, 255, 0.05);
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Viewer</title>
+  <style>
+    /* 余白やスクロールバーをすべて消去 */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+      background-color: #000; /* 背景色（黒） */
+      overflow: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+    }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+    /* 画像表示エリア */
+    #slider-container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 40px 20px;
-            background-image: 
-                linear-gradient(var(--grid-color) 1px, transparent 1px),
-                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
-            background-size: 30px 30px;
-            overflow-x: hidden;
-            position: relative;
-        }
+    #slide-img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain; /* 画面枠に合わせて全体を表示 */
+      pointer-events: none;
+    }
 
-        /* メイン画面 (cyber-container) */
-        .cyber-container {
-            width: 100%;
-            max-width: 600px;
-            background-color: var(--panel-bg);
-            border: 1px solid var(--accent-pink);
-            box-shadow: 0 0 15px var(--accent-pink-glow), inset 0 0 15px rgba(255, 0, 127, 0.1);
-            padding: 40px;
-            position: relative;
-            z-index: 100;
-        }
-
-        /* 装飾用コーナーライン */
-        .cyber-container::before {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            width: 20px;
-            height: 20px;
-            border-top: 4px solid var(--accent-pink);
-            border-left: 4px solid var(--accent-pink);
-        }
-
-        .cyber-container::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            right: -2px;
-            width: 20px;
-            height: 20px;
-            border-bottom: 4px solid var(--accent-pink);
-            border-right: 4px solid var(--accent-pink);
-        }
-
-        .header {
-            border-bottom: 1px solid rgba(255, 0, 127, 0.3);
-            padding-bottom: 24px;
-            margin-bottom: 32px;
-        }
-
-        .title {
-            font-size: 1.75rem;
-            line-height: 1.4;
-            font-weight: 700;
-            letter-spacing: 0.05em;
-        }
-
-        .title-accent {
-            color: var(--text-main);
-            position: relative;
-            display: inline-block;
-        }
-
-        .title-sub {
-            display: block;
-            font-size: 1.15rem;
-            margin-top: 8px;
-            color: var(--text-main);
-        }
-
-        .info-section {
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-        }
-
-        .info-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .info-label {
-            font-size: 0.8rem;
-            color: var(--accent-pink);
-            text-transform: uppercase;
-            letter-spacing: 0.2em;
-            font-weight: bold;
-            text-shadow: 0 0 5px rgba(255, 0, 127, 0.4);
-        }
-
-        .info-content {
-            font-size: 1.2rem;
-            background-color: rgba(10, 25, 60, 0.5);
-            padding: 14px 18px;
-            border-left: 3px solid var(--accent-pink);
-            letter-spacing: 0.05em;
-        }
-
-        /* 緊急メッセージエリア */
-        .extra-messages {
-            margin-top: 32px;
-            padding: 24px;
-            background: rgba(255, 0, 85, 0.08);
-            border: 1px solid rgba(255, 0, 85, 0.3);
-            box-shadow: inset 0 0 15px rgba(255, 0, 85, 0.1);
-            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
-        }
-
-        .msg-title {
-            color: #ff0055;
-            font-weight: bold;
-            font-size: 0.85rem;
-            letter-spacing: 0.2em;
-            margin-bottom: 16px;
-            border-bottom: 1px solid rgba(255, 0, 85, 0.3);
-            padding-bottom: 6px;
-            font-family: 'Courier New', Courier, monospace;
-        }
-
-        .msg-item {
-            font-size: 0.85rem;
-            color: var(--text-main);
-            line-height: 1.7;
-            margin-bottom: 10px;
-            position: relative;
-            padding-left: 18px;
-        }
-
-        .msg-item::before {
-            content: "▶";
-            position: absolute;
-            left: 0;
-            color: #ff0055;
-            font-size: 0.75rem;
-        }
-
-        .msg-item:last-child {
-            margin-bottom: 0;
-        }
-
-        /* モバイル端末向けの調整 */
-        @media (max-width: 480px) {
-            body {
-                padding: 20px 10px;
-            }
-            .cyber-container {
-                padding: 24px;
-            }
-            .title {
-                font-size: 1.4rem;
-            }
-            .title-sub {
-                font-size: 0.95rem;
-            }
-            .info-content {
-                font-size: 1.05rem;
-                padding: 10px 14px;
-            }
-        }
-    </style>
+    /* 左右のクリック判定エリア（不可視） */
+    .nav-zone {
+      position: absolute;
+      top: 0;
+      height: 100%;
+      width: 50%;
+      cursor: pointer;
+    }
+    .nav-left {
+      left: 0;
+    }
+    .nav-right {
+      right: 0;
+    }
+  </style>
 </head>
 <body>
 
-    <!-- メインコンテンツ -->
-    <div class="cyber-container">
-        <header class="header">
-            <h1 class="title">
-                <span class="title-accent" data-text="プロジェクトAI">プロジェクトAI</span>
-                <span class="title-sub">〜人類最後のアップデートが始まる〜</span>
-            </h1>
-        </header>
+  <div id="slider-container">
+    <img id="slide-img" src="" alt="">
+    <!-- 画面の左半分・右半分のクリック判定 -->
+    <div class="nav-zone nav-left" id="prev-btn"></div>
+    <div class="nav-zone nav-right" id="next-btn"></div>
+  </div>
 
-        <main class="info-section">
-            <div class="info-group">
-                <div class="info-label">日時</div>
-                <div class="info-content">9月5日（土）　9:30 - 15:00</div>
-            </div>
+  <script>
+    // ==========================================
+    //  設定
+    // ==========================================
+    const totalImages = 2; // ★ 画像の合計枚数を入力してください
+    const startNumber = 1;  // 開始番号（通常は 1 ）
+    // ==========================================
 
-            <div class="info-group">
-                <div class="info-label">場所</div>
-                <div class="info-content">HR棟4階 1年4組</div>
-            </div>
+    let currentIndex = startNumber;
 
-        </main>
-    </div>
+    const imgElement = document.getElementById('slide-img');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
 
+    // 画像の更新処理
+    function updateImage() {
+      imgElement.src = `${currentIndex}.png`;
+    }
+
+    // 前の画像へ（最初の画像より前に行こうとすると最後の画像へ移動）
+    function prevSlide() {
+      if (currentIndex > startNumber) {
+        currentIndex--;
+      } else {
+        currentIndex = totalImages;
+      }
+      updateImage();
+    }
+
+    // 次の画像へ（最後の画像より先に行こうとすると最初の画像へ移動）
+    function nextSlide() {
+      if (currentIndex < totalImages) {
+        currentIndex++;
+      } else {
+        currentIndex = startNumber;
+      }
+      updateImage();
+    }
+
+    // 画面クリックでの操作（左半分で戻る / 右半分で進む）
+    prevBtn.addEventListener('click', prevSlide);
+    nextBtn.addEventListener('click', nextSlide);
+
+    // キーボード操作（← / →）
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') {
+        prevSlide();
+      } else if (e.key === 'ArrowRight') {
+        nextSlide();
+      }
+    });
+
+    // スマホ・タブレットのスワイプ操作
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    document.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, false);
+
+    document.addEventListener('touchend', (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      handleSwipe();
+    }, false);
+
+    function handleSwipe() {
+      const diffX = touchEndX - touchStartX;
+      const minSwipeDistance = 50; // スワイプとみなす最小距離(px)
+
+      if (diffX > minSwipeDistance) {
+        prevSlide(); // 右スワイプで前へ
+      } else if (diffX < -minSwipeDistance) {
+        nextSlide(); // 左スワイプで次へ
+      }
+    }
+
+    // 初期化
+    updateImage();
+  </script>
 </body>
 </html>
